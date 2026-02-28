@@ -9,7 +9,7 @@ export default function Board() {
   const { state } = useGame();
 
   return (
-    <div className="grid grid-cols-6 grid-rows-6 gap-1 bg-michibiki-black p-1 border-4 border-michibiki-black shadow-2xl aspect-square w-full max-w-[500px]">
+    <div className="grid grid-cols-6 grid-rows-6 gap-0.5 bg-michibiki-black p-0.5 border-4 border-michibiki-black shadow-2xl aspect-square w-full max-w-[480px]">
       {state.board.map((row, y) =>
         row.map((cell, x) => (
           <CellComponent key={`${x}-${y}`} cell={cell} />

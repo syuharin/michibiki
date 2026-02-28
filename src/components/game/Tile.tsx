@@ -10,9 +10,10 @@ interface TileProps {
   isDraggable?: boolean;
   onClick?: () => void;
   className?: string;
+  style?: React.CSSProperties;
 }
 
-export default function Tile({ tile, isDraggable, onClick, className = "" }: TileProps) {
+export default function Tile({ tile, isDraggable, onClick, className = "", style }: TileProps) {
   const { state } = useGame();
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: tile.id,
@@ -21,9 +22,10 @@ export default function Tile({ tile, isDraggable, onClick, className = "" }: Til
   });
 
   const draggableStyle = {
-    transform: CSS.Translate.toString(transform),
-    zIndex: isDragging ? 100 : 1,
+    transform: transform ? CSS.Translate.toString(transform) : undefined,
+    zIndex: isDragging ? 100 : undefined,
     touchAction: isDraggable ? "none" : "auto" as const,
+    ...style,
   };
 
   const contentStyle = {
@@ -39,7 +41,7 @@ export default function Tile({ tile, isDraggable, onClick, className = "" }: Til
       {...listeners}
       {...attributes}
       onClick={onClick}
-      className={`relative w-16 h-16 bg-white border border-michibiki-gray-light flex items-center justify-center cursor-pointer transition-[border,background] ${className} ${isDraggable ? "hover:border-michibiki-black" : ""} ${tile.isReversal && tile.turnsLeft === 1 ? "reversal-pulse border-red-500 border-2" : ""} ${isDragging ? "shadow-2xl opacity-80" : ""}`}
+      className={`relative w-16 h-16 bg-white border border-michibiki-gray-light flex items-center justify-center cursor-pointer transition-[border,background] ${className} ${isDraggable ? "hover:border-michibiki-black" : ""} ${tile.isReversal && tile.turnsLeft === 1 ? "reversal-pulse border-red-500 border-2" : ""} ${isDragging ? "opacity-0" : "shadow-md"}`}
     >
       <div style={contentStyle} className="w-full h-full flex items-center justify-center transition-transform duration-200">
         <svg viewBox="0 0 100 100" className="w-full h-full">
