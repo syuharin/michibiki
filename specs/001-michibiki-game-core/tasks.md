@@ -102,9 +102,9 @@
 ### Implementation for User Story 4
 
 - [x] T024 [P] [US4] Implement layered tile rendering (Host/Guest overlays) in `src/components/game/Cell.tsx`
-- [x] T025 [US4] Implement **Host-side** turn-based countdown decrement logic in `src/hooks/useGameLogic.ts`
+- [x] T025 [US4] Implement **In-hand** turn-based countdown decrement logic in `src/hooks/useGameLogic.ts` (Corrected: only in hand, stops on placement)
 - [x] T026 [P] [US4] Add CSS pulse animation for tiles with 1 turn remaining in `src/styles/animations.css`
-- [x] T027 [US4] Implement **Host-side** auto-removal and hand replenishment logic in `src/hooks/useGameLogic.ts`
+- [x] T027 [US4] Implement **Host-side** hand removal and hand replenishment logic in `src/hooks/useGameLogic.ts`
 
 **Checkpoint**: All game mechanics complete.
 

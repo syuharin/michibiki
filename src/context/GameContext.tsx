@@ -27,7 +27,7 @@ const initialState: GameState = {
   hands: {},
 };
 
-function gameReducer(state: GameState, action: GameAction): GameState {
+export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case "START_GAME": {
       // Prevent double initialization
@@ -101,7 +101,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const updatedTile: Tile = { 
         ...tile, 
         id: isInitialPlacement ? `placed-${tile.id}-${Date.now()}` : tile.id,
-        rotation: rotation as 0 | 90 | 180 | 270 
+        rotation: rotation as 0 | 90 | 180 | 270,
+        turnsLeft: isInitialPlacement ? null : tile.turnsLeft // Stop countdown if just placed
       };
       
       if (existingTileInCell) {
@@ -132,34 +133,30 @@ function gameReducer(state: GameState, action: GameAction): GameState {
     }
     case "CONFIRM_TURN": {
       const currentPlayerId = state.turnOwnerId;
-      const newBoard = [...state.board.map(row => [...row])];
-
-      for (let y = 0; y < BOARD_SIZE; y++) {
-        for (let x = 0; x < BOARD_SIZE; x++) {
-          const cell = newBoard[y][x];
-          if (cell.layers.length > 0) {
-            const topTile = cell.layers[cell.layers.length - 1];
-            if (topTile.ownerId === currentPlayerId && topTile.isReversal && topTile.turnsLeft !== null) {
-              const nextTurns = topTile.turnsLeft - 1;
-              if (nextTurns <= 0) {
-                newBoard[y][x] = { ...cell, layers: cell.layers.slice(0, -1) };
-              } else {
-                const updatedTile = { ...topTile, turnsLeft: nextTurns };
-                const newLayers = [...cell.layers];
-                newLayers[newLayers.length - 1] = updatedTile;
-                newBoard[y][x] = { ...cell, layers: newLayers };
-              }
-            }
-          }
-        }
-      }
-
-      // IMMUTABLE Update for Hands and Deck
-      let newDeck = [...state.deck];
-      const newHands: Record<string, Tile[]> = {};
       
+      // 1. Decrement turns for reversal tiles IN HAND for the current player
+      const newHands: Record<string, Tile[]> = {};
       Object.keys(state.hands).forEach(pid => {
         let currentHand = [...state.hands[pid]];
+        if (pid === currentPlayerId) {
+          // Only decrement for the player who just finished their turn
+          currentHand = currentHand
+            .map(tile => {
+              if (tile.isReversal && tile.turnsLeft !== null) {
+                return { ...tile, turnsLeft: tile.turnsLeft - 1 };
+              }
+              return tile;
+            })
+            // Filter out tiles that reached 0 or less
+            .filter(tile => !tile.isReversal || tile.turnsLeft === null || tile.turnsLeft > 0);
+        }
+        newHands[pid] = currentHand;
+      });
+
+      // 2. Refill hands from deck
+      let newDeck = [...state.deck];
+      Object.keys(newHands).forEach(pid => {
+        let currentHand = [...newHands[pid]];
         while (currentHand.length < 3) {
           const deckIdx = newDeck.findIndex(t => t.ownerId === pid);
           if (deckIdx === -1) break;
@@ -173,7 +170,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       
       return {
         ...state,
-        board: newBoard,
         hands: newHands,
         deck: newDeck,
         turnOwnerId: nextTurnOwner,
