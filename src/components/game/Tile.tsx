@@ -34,6 +34,15 @@ export default function Tile({ tile, isDraggable, onClick, className = "", style
 
   const isOwnerHost = tile.ownerId === state.hostPeerId;
 
+  const isReversal = tile.isReversal;
+
+  // Color logic: Special colors ONLY for reversal tiles
+  const colors = isReversal
+    ? (isOwnerHost 
+        ? { bg: "bg-indigo-50", border: "border-indigo-300", accent: "bg-indigo-600" }
+        : { bg: "bg-rose-50", border: "border-rose-300", accent: "bg-rose-600" })
+    : { bg: "bg-white", border: "border-michibiki-gray-light", accent: "bg-michibiki-black" };
+
   return (
     <div 
       ref={setNodeRef}
@@ -41,15 +50,15 @@ export default function Tile({ tile, isDraggable, onClick, className = "", style
       {...listeners}
       {...attributes}
       onClick={onClick}
-      className={`relative w-16 h-16 bg-white border border-michibiki-gray-light flex items-center justify-center cursor-pointer transition-[border,background] ${className} ${isDraggable ? "hover:border-michibiki-black" : ""} ${tile.isReversal && tile.turnsLeft === 1 ? "reversal-pulse border-red-500 border-2" : ""} ${isDragging ? "opacity-0" : "shadow-md"}`}
+      className={`relative w-16 h-16 ${colors.bg} ${colors.border} border flex items-center justify-center cursor-pointer transition-[border,background] ${className} ${isDraggable ? "hover:border-michibiki-black" : ""} ${tile.isReversal && tile.turnsLeft === 1 ? "reversal-pulse border-red-500 border-2" : ""} ${isDragging ? "opacity-0" : "shadow-md"}`}
     >
-      <div style={contentStyle} className="w-full h-full flex items-center justify-center transition-transform duration-200">
+      <div style={contentStyle} className="w-full h-full flex items-center justify-center">
         <svg viewBox="0 0 100 100" className="w-full h-full">
-          <TileSVGContent type={tile.type} isHost={isOwnerHost} />
+          <TileSVGContent type={tile.type} isHost={isOwnerHost} isReversal={tile.isReversal} />
         </svg>
       </div>
       {tile.isReversal && (
-        <div className="absolute top-0 right-0 bg-michibiki-black text-white text-[10px] px-1 rounded-bl font-mono">
+        <div className={`absolute top-0 right-0 ${colors.accent} text-white text-[10px] px-1 rounded-bl font-mono font-bold`}>
           {tile.turnsLeft}
         </div>
       )}
@@ -57,8 +66,12 @@ export default function Tile({ tile, isDraggable, onClick, className = "", style
   );
 }
 
-function TileSVGContent({ type, isHost }: { type: string, isHost: boolean }) {
-  const stroke = isHost ? "black" : "#64748B";
+function TileSVGContent({ type, isHost, isReversal }: { type: string, isHost: boolean, isReversal: boolean }) {
+  // Stroke color: Accent colors only for Reversal tiles
+  let stroke = isHost ? "black" : "#64748B";
+  if (isReversal) {
+    stroke = isHost ? "#4338CA" : "#BE123C"; // Indigo for Host, Rose for Guest
+  }
   const strokeWidth = 10;
 
   const renderLine = (x1: number, y1: number, x2: number, y2: number) => (
@@ -83,9 +96,9 @@ function TileSVGContent({ type, isHost }: { type: string, isHost: boolean }) {
 
   switch (type) {
     case "STRAIGHT":
-    case "VERTICAL":
-      // Since the div container handles rotation, we only need one base orientation
       return renderLine(0, 50, 100, 50);
+    case "VERTICAL":
+      return renderLine(50, 0, 50, 100);
     case "CORNER":
       return renderCorner(0, 0, 50, 0, 0); // Default corner shape
     case "T":

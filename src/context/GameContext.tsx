@@ -126,9 +126,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       
       newBoard[y][x] = { ...cell, layers: [...cell.layers, updatedTile] };
 
-      const newScores = { ...state.scores };
       const connectedGroup = calculateConnectedGroup(newBoard, x, y);
-      newScores[state.turnOwnerId] = (newScores[state.turnOwnerId] || 0) + connectedGroup.size;
+      const newScores = { 
+        ...state.scores,
+        [state.turnOwnerId]: (state.scores[state.turnOwnerId] || 0) + connectedGroup.size
+      };
 
       const nextHands = { ...state.hands };
       nextHands[state.turnOwnerId] = playerHand.filter((t) => t.id !== tileId);
