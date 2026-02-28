@@ -29,12 +29,12 @@ export interface GameState {
   guestPeerId: string | null;
   board: Board;
   scores: Record<string, number>; // PeerID -> Score
-  deck: Tile[];
+  decks: Record<string, Tile[]>; // PeerID -> Deck
   hands: Record<string, Tile[]>; // PeerID -> Hand
 }
 
 export type GameAction =
-  | { type: "START_GAME"; guestPeerId: string; initialDeck: Tile[]; initialHands: Record<string, Tile[]> }
+  | { type: "START_GAME"; guestPeerId: string; initialDecks: Record<string, Tile[]>; initialHands: Record<string, Tile[]> }
   | { type: "PLACE_TILE"; tileId: string; x: number; y: number; rotation: number }
   | { type: "ROTATE_HAND_TILE"; tileId: string }
   | { type: "CONFIRM_TURN" } // Deprecated: Use automated logic after PLACE_TILE or PASS_TURN for manual skip

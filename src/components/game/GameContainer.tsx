@@ -6,9 +6,11 @@ import { useGame } from "@/context/GameContext";
 import { usePeer } from "@/hooks/usePeer";
 import { useGameLogic } from "@/hooks/useGameLogic";
 import RoomShare from "@/components/matchmaking/RoomShare";
+import { Trophy } from "lucide-react";
 import Board from "./Board";
 import Hand from "./Hand";
 import Tile from "./Tile";
+import Deck from "./Deck";
 import { hasLegalMove } from "@/lib/game/validation";
 import { Tile as TileType } from "@/types/game";
 
@@ -50,9 +52,17 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
   const sensorsWrapper = useSensors(...sensors);
 
   const myPeerId = isHost ? state.hostPeerId : state.guestPeerId;
+  const opponentPeerId = isHost ? state.guestPeerId : state.hostPeerId;
   const isMyTurn = state.turnOwnerId === myPeerId;
-  const myHand = state.hands[myPeerId || ""] || [];
   
+  const myHand = useMemo(() => state.hands[myPeerId || ""] || [], [state.hands, myPeerId]);
+  
+  const myScore = state.scores[myPeerId || ""] || 0;
+  const opponentScore = opponentPeerId ? (state.scores[opponentPeerId] || 0) : 0;
+
+  const myDeckCount = myPeerId ? (state.decks[myPeerId]?.length || 0) : 0;
+  const opponentDeckCount = opponentPeerId ? (state.decks[opponentPeerId]?.length || 0) : 0;
+
   const isPassAvailable = useMemo(() => 
     isMyTurn && !hasLegalMove(state.board, myHand),
     [isMyTurn, state.board, myHand]
@@ -132,16 +142,32 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
         
         <div className={`flex-1 w-full max-w-6xl flex gap-6 overflow-hidden ${layout === "right" ? "flex-row" : "flex-col"}`}>
           <main className="flex-1 flex flex-col items-center gap-4 py-2 overflow-y-auto">
-            <div className="flex justify-between w-full items-end">
-              <div className={`p-2 px-3 border-2 transition-all ${isMyTurn ? "border-michibiki-black scale-105 shadow-md bg-white" : "border-michibiki-gray-light grayscale opacity-50"}`}>
-                <p className="text-[8px] font-black uppercase tracking-widest text-michibiki-gray">Turn</p>
-                <p className="text-lg font-black text-michibiki-black leading-none">{isMyTurn ? "YOUR MOVE" : "OPPONENT"}</p>
+            {/* Stats Bar */}
+            <div className="flex justify-between w-full items-center bg-white border-2 border-michibiki-black p-3 shadow-sm shrink-0">
+              <div className={`p-2 px-3 border-2 transition-all ${isMyTurn ? "border-michibiki-black bg-michibiki-black text-white" : "border-michibiki-gray-light text-michibiki-gray grayscale opacity-50"}`}>
+                <p className="text-[8px] font-black uppercase tracking-widest opacity-70">Status</p>
+                <p className="text-sm font-black leading-none">{isMyTurn ? "YOUR TURN" : "OPPONENT'S TURN"}</p>
               </div>
-              <div className="text-right p-2 px-4 bg-michibiki-black text-michibiki-white">
-                <p className="text-[8px] font-bold uppercase tracking-widest opacity-70">Score</p>
-                <p className="text-2xl font-black tracking-tighter leading-none">
-                  {state.scores[myPeerId || ""] || 0}
-                </p>
+
+              <div className="flex gap-4 items-center">
+                <div className="text-right p-2 px-3 border-2 border-michibiki-black flex items-center gap-4">
+                  <Deck count={myDeckCount} />
+                  <div>
+                    <p className="text-[8px] font-bold uppercase tracking-widest text-michibiki-gray">You</p>
+                    <p className="text-xl font-black tracking-tighter leading-none">{myScore}</p>
+                  </div>
+                  <Trophy className="w-5 h-5 text-michibiki-black" />
+                </div>
+                {state.status === "IN_PROGRESS" && opponentPeerId && (
+                  <div className="text-right p-2 px-3 border-2 border-michibiki-gray-light flex items-center gap-4 bg-michibiki-white">
+                    <Deck count={opponentDeckCount} />
+                    <div>
+                      <p className="text-[8px] font-bold uppercase tracking-widest text-michibiki-gray">Opponent</p>
+                      <p className="text-xl font-black tracking-tighter leading-none">{opponentScore}</p>
+                    </div>
+                    <Trophy className="w-5 h-5 text-michibiki-gray" />
+                  </div>
+                )}
               </div>
             </div>
 

@@ -24,15 +24,16 @@ const initialState: GameState = {
   guestPeerId: null,
   board: createEmptyBoard(),
   scores: {},
-  deck: [],
+  decks: {},
   hands: {},
 };
 
 // Helper to handle turn transition, hand refilling, and game end detection
-function finalizeTurn(state: GameState, board: Board, hands: Record<string, Tile[]>, deck: Tile[], scores: Record<string, number>): GameState {
+function finalizeTurn(state: GameState, board: Board, hands: Record<string, Tile[]>, decks: Record<string, Tile[]>, scores: Record<string, number>): GameState {
   if (state.status !== "IN_PROGRESS") return state;
   const currentPlayerId = state.turnOwnerId;
   const newHands: Record<string, Tile[]> = {};
+  const newDecks: Record<string, Tile[]> = { ...decks };
   
   // Ensure deterministic execution order across different JS environments
   const playerIds = [state.hostPeerId, state.guestPeerId].filter((id): id is string => !!id);
@@ -49,16 +50,17 @@ function finalizeTurn(state: GameState, board: Board, hands: Record<string, Tile
   });
 
   // 2. Refill hands from deck
-  let newDeck = [...deck];
   playerIds.forEach(pid => {
     let currentHand = [...newHands[pid]];
+    let playerDeck = [...(newDecks[pid] || [])];
     while (currentHand.length < 3) {
-      const deckIdx = newDeck.findIndex(t => t.ownerId === pid);
-      if (deckIdx === -1) break;
-      const [tile] = newDeck.splice(deckIdx, 1);
+      if (playerDeck.length === 0) break;
+      const [tile, ...remaining] = playerDeck;
       currentHand = [...currentHand, tile];
+      playerDeck = remaining;
     }
     newHands[pid] = currentHand;
+    newDecks[pid] = playerDeck;
   });
 
   // 3. Determine next turn owner (with skip logic)
@@ -66,13 +68,13 @@ function finalizeTurn(state: GameState, board: Board, hands: Record<string, Tile
   
   const isPlayerEmpty = (pid: string) => {
     const hand = newHands[pid] || [];
-    const hasTilesInDeck = newDeck.some(t => t.ownerId === pid);
-    return hand.length === 0 && !hasTilesInDeck;
+    const deck = newDecks[pid] || [];
+    return hand.length === 0 && deck.length === 0;
   };
 
   if (isPlayerEmpty(nextTurnOwner)) {
     if (isPlayerEmpty(state.turnOwnerId)) {
-      return { ...state, board, hands: newHands, deck: newDeck, scores, status: "FINISHED" };
+      return { ...state, board, hands: newHands, decks: newDecks, scores, status: "FINISHED" };
     }
     nextTurnOwner = state.turnOwnerId;
   }
@@ -81,7 +83,7 @@ function finalizeTurn(state: GameState, board: Board, hands: Record<string, Tile
     ...state,
     board,
     hands: newHands,
-    deck: newDeck,
+    decks: newDecks,
     scores,
     turnOwnerId: nextTurnOwner,
   };
@@ -97,11 +99,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         status: "IN_PROGRESS",
         guestPeerId: action.guestPeerId,
-        turnOwnerId: state.hostPeerId,
+        turnOwnerId: state.hostPeerId, // Host starts
         hands: action.initialHands,
-        deck: action.initialDeck,
+        decks: action.initialDecks,
         scores: { [state.hostPeerId]: 0, [action.guestPeerId]: 0 },
-      };
+        };
+
     }
     case "SYNC_STATE":
       return { ...action.state };
@@ -135,7 +138,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const nextHands = { ...state.hands };
       nextHands[state.turnOwnerId] = playerHand.filter((t) => t.id !== tileId);
 
-      return finalizeTurn(state, newBoard, nextHands, state.deck, newScores);
+      return finalizeTurn(state, newBoard, nextHands, state.decks, newScores);
     }
     case "ROTATE_HAND_TILE": {
       const { tileId } = action;
@@ -164,7 +167,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
     case "PASS_TURN":
     case "CONFIRM_TURN": {
-      return finalizeTurn(state, state.board, state.hands, state.deck, state.scores);
+      return finalizeTurn(state, state.board, state.hands, state.decks, state.scores);
     }
     default:
       return state;

@@ -110,20 +110,21 @@ export function usePeer(roomId: string, isHost: boolean) {
 
             const shuffled = [...allTiles].sort(() => Math.random() - 0.5);
             const initialHands: Record<string, any[]> = {};
-            const initialDeck: any[] = [];
-            
+            const initialDecks: Record<string, any[]> = {};
+
             players.forEach(pid => {
               const playerTiles = shuffled.filter(t => t.ownerId === pid);
               initialHands[pid] = playerTiles.slice(0, 3);
-              initialDeck.push(...playerTiles.slice(3));
+              initialDecks[pid] = playerTiles.slice(3);
             });
 
             dispatch({ 
               type: "START_GAME", 
               guestPeerId: msg.guestPeerId,
               initialHands,
-              initialDeck
+              initialDecks
             });
+
           }
           break;
         case "BOARD_SYNC":
