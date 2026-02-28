@@ -59,3 +59,12 @@ function getTopTile(board: Board, x: number, y: number): Tile | null {
   const cell = board[y][x];
   return cell.layers.length > 0 ? cell.layers[cell.layers.length - 1] : null;
 }
+
+export function calculateWinner(scores: Record<string, number>, hostPeerId: string, guestPeerId: string | null): string {
+  const hostScore = scores[hostPeerId] || 0;
+  const guestScore = guestPeerId ? (scores[guestPeerId] || 0) : 0;
+
+  if (hostScore > guestScore) return hostPeerId;
+  if (guestScore > hostScore) return guestPeerId || "GUEST";
+  return "DRAW";
+}

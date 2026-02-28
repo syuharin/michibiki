@@ -12,13 +12,14 @@ import Hand from "./Hand";
 import Tile from "./Tile";
 import Deck from "./Deck";
 import TurnOrderSelector from "./TurnOrderSelector";
+import ResultModal from "./ResultModal";
 import { hasLegalMove } from "@/lib/game/validation";
 import { Tile as TileType } from "@/types/game";
 
 export default function GameContainer({ roomId, isHost }: { roomId: string; isHost: boolean }) {
   const { state } = useGame();
   const { isConnected, sendMessage, peerId, startGame } = usePeer(roomId, isHost);
-  const { placeTile, rotateTile, passTurn, setTurnOrder } = useGameLogic(isHost, sendMessage);
+  const { placeTile, rotateTile, passTurn, setTurnOrder, handleRematch, handleReturnToLobby } = useGameLogic(isHost, sendMessage);
 
   const myPeerId = isHost ? state.hostPeerId : state.guestPeerId;
 
@@ -253,6 +254,12 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
           <Tile tile={activeTile} isDraggable={false} className="shadow-2xl scale-110 opacity-90 cursor-grabbing" />
         ) : null}
       </DragOverlay>
+
+      <ResultModal 
+        isHost={isHost} 
+        onRematch={handleRematch} 
+        onReturnToLobby={handleReturnToLobby} 
+      />
     </DndContext>
   );
 }

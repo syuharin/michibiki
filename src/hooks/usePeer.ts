@@ -5,6 +5,7 @@ import Peer, { DataConnection } from "peerjs";
 import { useGame } from "@/context/GameContext";
 import { P2PMessage, deserializeMessage, serializeMessage } from "@/lib/p2p/protocol";
 import { Tile, TileType } from "@/types/game";
+import { calculateWinner } from "@/lib/game/scoring";
 
 /**
  * Fisher-Yates Shuffle algorithm for uniform distribution.
@@ -110,6 +111,24 @@ export function usePeer(roomId: string, isHost: boolean) {
             }
           }
           break;
+        case "GAME_OVER":
+          if (!isHost) {
+            dispatch({ type: "SYNC_STATE", state: { ...stateRef.current, status: "FINISHED", scores: msg.finalScores, winnerId: msg.winnerId } });
+          }
+          break;
+        case "REMATCH_READY":
+          dispatch({ type: "SET_REMATCH_READY", peerId: msg.peerId, ready: msg.ready });
+          break;
+        case "REMATCH_START":
+          if (!isHost) {
+            dispatch({ 
+              type: "RESET_GAME", 
+              initialDecks: {}, 
+              initialHands: {}, 
+              startingPlayerId: null 
+            });
+          }
+          break;
       }
     };
 
@@ -184,7 +203,7 @@ export function usePeer(roomId: string, isHost: boolean) {
   }, [isHost, state, dispatch]);
 
   useEffect(() => {
-    if (isHost && isConnected && (state.status === "IN_PROGRESS" || state.status === "WAITING_FOR_GUEST")) {
+    if (isHost && isConnected && (state.status === "IN_PROGRESS" || state.status === "WAITING_FOR_GUEST" || state.status === "FINISHED")) {
       sendMessage({ type: "BOARD_SYNC", state: stateRef.current });
     }
   }, [
@@ -198,6 +217,32 @@ export function usePeer(roomId: string, isHost: boolean) {
     state.turnOwnerId,
     sendMessage
   ]);
+
+  useEffect(() => {
+    if (isHost && isConnected && state.status === "FINISHED" && !state.winnerId) {
+      const winnerId = calculateWinner(state.scores, state.hostPeerId, state.guestPeerId || "");
+      sendMessage({ type: "GAME_OVER", winnerId, finalScores: state.scores });
+      dispatch({ type: "SYNC_STATE", state: { ...state, winnerId } });
+    }
+  }, [isHost, isConnected, state.status, state.winnerId, state.scores, state.hostPeerId, state.guestPeerId, sendMessage, dispatch, state]);
+
+  useEffect(() => {
+    if (isHost && isConnected && state.status === "REMATCH_WAITING") {
+      const current = stateRef.current;
+      const players = [current.hostPeerId, current.guestPeerId].filter((id): id is string => !!id);
+      const allReady = players.every(pid => current.rematchReady[pid]);
+      
+      if (allReady) {
+        sendMessage({ 
+          type: "REMATCH_START", 
+          initialDecks: {}, 
+          initialHands: {}, 
+          turnOwnerId: "" 
+        });
+        dispatch({ type: "RESET_GAME" });
+      }
+    }
+  }, [isHost, isConnected, state.status, state.rematchReady, state.hostPeerId, state.guestPeerId, sendMessage, dispatch]);
 
   return { peerId, isConnected, sendMessage, startGame };
 }

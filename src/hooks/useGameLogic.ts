@@ -9,6 +9,7 @@ export function useGameLogic(isHost: boolean, sendMessage: (msg: any) => void) {
   const { state, dispatch } = useGame();
 
   const placeTile = useCallback((tileId: string, x: number, y: number, rotation: number) => {
+    if (state.status === "FINISHED") return false;
     const myPeerId = isHost ? state.hostPeerId : state.guestPeerId;
     if (state.turnOwnerId !== myPeerId) return false;
 
@@ -29,6 +30,7 @@ export function useGameLogic(isHost: boolean, sendMessage: (msg: any) => void) {
   }, [state, isHost, dispatch, sendMessage]);
 
   const rotateTile = useCallback((tileId: string) => {
+    if (state.status === "FINISHED") return;
     const myPeerId = isHost ? state.hostPeerId : state.guestPeerId;
     if (state.turnOwnerId !== myPeerId) return;
 
@@ -44,6 +46,7 @@ export function useGameLogic(isHost: boolean, sendMessage: (msg: any) => void) {
   }, [state, isHost, dispatch, sendMessage]);
 
   const passTurn = useCallback(() => {
+    if (state.status === "FINISHED") return;
     const myPeerId = isHost ? state.hostPeerId : state.guestPeerId;
     if (state.turnOwnerId !== myPeerId) return;
 
@@ -70,5 +73,17 @@ export function useGameLogic(isHost: boolean, sendMessage: (msg: any) => void) {
     }
   }, [isHost, dispatch, sendMessage]);
 
-  return { placeTile, rotateTile, passTurn, setTurnOrder };
+  const handleRematch = useCallback(() => {
+    const myPeerId = isHost ? state.hostPeerId : state.guestPeerId;
+    if (!myPeerId) return;
+    
+    dispatch({ type: "SET_REMATCH_READY", peerId: myPeerId, ready: true });
+    sendMessage({ type: "REMATCH_READY", peerId: myPeerId, ready: true });
+  }, [isHost, state.hostPeerId, state.guestPeerId, dispatch, sendMessage]);
+
+  const handleReturnToLobby = useCallback(() => {
+    window.location.href = "/";
+  }, []);
+
+  return { placeTile, rotateTile, passTurn, setTurnOrder, handleRematch, handleReturnToLobby };
 }

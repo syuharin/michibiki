@@ -25,7 +25,7 @@ export type Board = Cell[][];
 
 export interface GameState {
   roomId: string;
-  status: "WAITING_FOR_GUEST" | "IN_PROGRESS" | "FINISHED";
+  status: "WAITING_FOR_GUEST" | "IN_PROGRESS" | "FINISHED" | "REMATCH_WAITING";
   turnOwnerId: string; // PeerID
   hostPeerId: string;
   guestPeerId: string | null;
@@ -35,6 +35,8 @@ export interface GameState {
   hands: Record<string, Tile[]>; // PeerID -> Hand
   turnOrderConfig: TurnOrderOption;
   startingPlayerId: string | null;
+  rematchReady: Record<string, boolean>; // PeerID -> Ready Status
+  winnerId: string | null; // PeerID or "DRAW"
 }
 
 export type GameAction =
@@ -45,4 +47,6 @@ export type GameAction =
   | { type: "ROTATE_HAND_TILE"; tileId: string }
   | { type: "CONFIRM_TURN" } // Deprecated: Use automated logic after PLACE_TILE or PASS_TURN for manual skip
   | { type: "PASS_TURN" }
-  | { type: "SYNC_STATE"; state: GameState };
+  | { type: "SYNC_STATE"; state: GameState }
+  | { type: "SET_REMATCH_READY"; peerId: string; ready: boolean }
+  | { type: "RESET_GAME" };

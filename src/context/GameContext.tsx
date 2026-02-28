@@ -28,6 +28,8 @@ const initialState: GameState = {
   hands: {},
   turnOrderConfig: "UNSELECTED",
   startingPlayerId: null,
+  rematchReady: {},
+  winnerId: null,
 };
 
 // Helper to handle turn transition, hand refilling, and game end detection
@@ -50,6 +52,14 @@ function finalizeTurn(state: GameState, board: Board, hands: Record<string, Tile
     }
     newHands[pid] = currentHand;
   });
+
+  // 1.5 Decrement turns for reversal tiles on the board (only if owned by current player)
+  const newBoard = board.map(row => row.map(cell => ({
+    ...cell,
+    layers: cell.layers
+      .map(tile => (tile.isReversal && tile.turnsLeft !== null && tile.ownerId === currentPlayerId) ? { ...tile, turnsLeft: tile.turnsLeft - 1 } : tile)
+      .filter(tile => !tile.isReversal || tile.turnsLeft === null || tile.turnsLeft > 0)
+  })));
 
   // 2. Refill hands from deck
   playerIds.forEach(pid => {
@@ -74,16 +84,26 @@ function finalizeTurn(state: GameState, board: Board, hands: Record<string, Tile
     return hand.length === 0 && deck.length === 0;
   };
 
+  const hasActiveReversalTiles = newBoard.some(row => 
+    row.some(cell => 
+      cell.layers.some(tile => tile.isReversal && tile.turnsLeft !== null && tile.turnsLeft > 0)
+    )
+  );
+
   if (isPlayerEmpty(nextTurnOwner)) {
     if (isPlayerEmpty(state.turnOwnerId)) {
-      return { ...state, board, hands: newHands, decks: newDecks, scores, status: "FINISHED" };
+      if (!hasActiveReversalTiles) {
+        return { ...state, board: newBoard, hands: newHands, decks: newDecks, scores, status: "FINISHED" };
+      }
+      // Automate turn progression until reversal tiles expire
+      return finalizeTurn({ ...state, board: newBoard, turnOwnerId: nextTurnOwner }, newBoard, newHands, newDecks, scores);
     }
     nextTurnOwner = state.turnOwnerId;
   }
 
   return {
     ...state,
-    board,
+    board: newBoard,
     hands: newHands,
     decks: newDecks,
     scores,
@@ -174,6 +194,25 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case "PASS_TURN":
     case "CONFIRM_TURN": {
       return finalizeTurn(state, state.board, state.hands, state.decks, state.scores);
+    }
+    case "SET_REMATCH_READY": {
+      return {
+        ...state,
+        status: "REMATCH_WAITING",
+        rematchReady: {
+          ...state.rematchReady,
+          [action.peerId]: action.ready
+        }
+      };
+    }
+    case "RESET_GAME": {
+      return {
+        ...initialState,
+        roomId: state.roomId,
+        hostPeerId: state.hostPeerId,
+        guestPeerId: state.guestPeerId,
+        scores: { [state.hostPeerId]: 0, [state.guestPeerId || ""]: 0 },
+      };
     }
     default:
       return state;

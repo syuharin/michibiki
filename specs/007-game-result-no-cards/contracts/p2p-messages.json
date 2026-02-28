@@ -1,0 +1,29 @@
+{
+  "messages": {
+    "GAME_OVER": {
+      "type": "GAME_OVER",
+      "payload": {
+        "finalScores": {
+          "hostId": "number",
+          "guestId": "number"
+        },
+        "winnerId": "string"
+      }
+    },
+    "REMATCH_READY": {
+      "type": "REMATCH_READY",
+      "payload": {
+        "peerId": "string",
+        "ready": "boolean"
+      }
+    },
+    "REMATCH_START": {
+      "type": "REMATCH_START",
+      "payload": {
+        "initialDecks": "Record<string, Tile[]>",
+        "initialHands": "Record<string, Tile[]>",
+        "turnOwnerId": "string"
+      }
+    }
+  }
+}
