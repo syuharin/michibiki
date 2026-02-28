@@ -11,17 +11,30 @@ import Board from "./Board";
 import Hand from "./Hand";
 import Tile from "./Tile";
 import Deck from "./Deck";
+import TurnOrderSelector from "./TurnOrderSelector";
 import { hasLegalMove } from "@/lib/game/validation";
 import { Tile as TileType } from "@/types/game";
 
 export default function GameContainer({ roomId, isHost }: { roomId: string; isHost: boolean }) {
   const { state } = useGame();
-  const { isConnected, sendMessage, peerId } = usePeer(roomId, isHost);
-  const { placeTile, rotateTile, passTurn } = useGameLogic(isHost, sendMessage);
+  const { isConnected, sendMessage, peerId, startGame } = usePeer(roomId, isHost);
+  const { placeTile, rotateTile, passTurn, setTurnOrder } = useGameLogic(isHost, sendMessage);
+
+  const myPeerId = isHost ? state.hostPeerId : state.guestPeerId;
 
   const [layout, setLayout] = useState<"bottom" | "right">("bottom");
   const [isMounted, setIsMounted] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [startMessage, setStartMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (state.status === "IN_PROGRESS" && state.startingPlayerId) {
+      const isMe = state.startingPlayerId === myPeerId;
+      setStartMessage(`先行: ${isMe ? "あなた" : "相手"}`);
+      const timer = setTimeout(() => setStartMessage(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [state.status, state.startingPlayerId, myPeerId]);
 
   useEffect(() => {
     setIsMounted(true);
@@ -51,7 +64,6 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
   const sensors = useMemo(() => [mouseSensor, touchSensor], [mouseSensor, touchSensor]);
   const sensorsWrapper = useSensors(...sensors);
 
-  const myPeerId = isHost ? state.hostPeerId : state.guestPeerId;
   const opponentPeerId = isHost ? state.guestPeerId : state.hostPeerId;
   const isMyTurn = state.turnOwnerId === myPeerId;
   
@@ -99,9 +111,39 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
     return (
       <div className="flex min-h-screen flex-col items-center justify-center p-6 gap-8 bg-michibiki-white">
         <h1 className="text-4xl font-black tracking-tighter uppercase italic text-michibiki-black">MICHIBIKI</h1>
-        <div className="text-xl font-bold animate-pulse text-michibiki-gray-dark">対戦相手を待っています...</div>
+        
+        <div className="w-full max-w-xl flex flex-col gap-6">
+          {!state.guestPeerId ? (
+            <div className="text-xl font-bold animate-pulse text-center text-michibiki-gray-dark">対戦相手を待っています...</div>
+          ) : (
+            <>
+              <div className="text-xl font-bold text-center text-michibiki-black">対戦相手が参加しました！</div>
+              <TurnOrderSelector 
+                currentOption={state.turnOrderConfig} 
+                onSelect={setTurnOrder} 
+                isHost={isHost} 
+              />
+              
+              {isHost && (
+                <button
+                  onClick={startGame}
+                  disabled={state.turnOrderConfig === "UNSELECTED"}
+                  className={`w-full py-4 font-black text-xl transition-all shadow-[0_4px_0_rgb(51,65,85)] active:translate-y-1 active:shadow-none ${
+                    state.turnOrderConfig === "UNSELECTED"
+                      ? "bg-michibiki-gray-light text-michibiki-gray cursor-not-allowed opacity-50"
+                      : "bg-michibiki-black text-white hover:bg-michibiki-gray-dark"
+                  }`}
+                >
+                  ゲーム開始
+                </button>
+              )}
+            </>
+          )}
+        </div>
+
         {isHost && <RoomShare roomId={roomId} />}
-        {!isHost && <p className="text-lg text-michibiki-gray">ホストに接続中...</p>}
+        {!isHost && !state.guestPeerId && <p className="text-lg text-michibiki-gray">ホストに接続中...</p>}
+        
         <div className="fixed bottom-4 right-4 text-xs font-mono bg-michibiki-black text-white p-2 rounded">
           STATUS: {isConnected ? "CONNECTED" : "CONNECTING..."} | ID: {peerId}
         </div>
@@ -119,6 +161,13 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
       onDragCancel={() => setActiveId(null)}
     >
       <div className="flex min-h-screen flex-col items-center p-4 gap-6 bg-michibiki-white overflow-hidden">
+        {startMessage && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center pointer-events-none">
+            <div className="bg-michibiki-black text-white px-12 py-6 rounded-none border-4 border-white shadow-2xl animate-in zoom-in duration-300">
+              <p className="text-4xl font-black uppercase tracking-widest">{startMessage}</p>
+            </div>
+          </div>
+        )}
         {!isConnected && (
           <div className="fixed inset-0 z-[100] bg-michibiki-black/80 flex items-center justify-center backdrop-blur-sm">
             <div className="bg-white p-8 rounded-lg shadow-2xl text-center space-y-4">

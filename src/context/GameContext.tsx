@@ -26,6 +26,8 @@ const initialState: GameState = {
   scores: {},
   decks: {},
   hands: {},
+  turnOrderConfig: "UNSELECTED",
+  startingPlayerId: null,
 };
 
 // Helper to handle turn transition, hand refilling, and game end detection
@@ -91,6 +93,10 @@ function finalizeTurn(state: GameState, board: Board, hands: Record<string, Tile
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
+    case "SET_GUEST_ID":
+      return { ...state, guestPeerId: action.guestPeerId };
+    case "SET_TURN_ORDER":
+      return { ...state, turnOrderConfig: action.config };
     case "START_GAME": {
       // Prevent double initialization
       if (state.status !== "WAITING_FOR_GUEST") return state;
@@ -99,12 +105,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         status: "IN_PROGRESS",
         guestPeerId: action.guestPeerId,
-        turnOwnerId: state.hostPeerId, // Host starts
+        turnOwnerId: action.turnOwnerId,
+        startingPlayerId: action.turnOwnerId,
         hands: action.initialHands,
         decks: action.initialDecks,
         scores: { [state.hostPeerId]: 0, [action.guestPeerId]: 0 },
-        };
-
+      };
     }
     case "SYNC_STATE":
       return { ...action.state };
@@ -180,7 +186,7 @@ const GameContext = createContext<{
 } | null>(null);
 
 export function GameProvider({ children, initialRoomId, hostPeerId }: { children: ReactNode; initialRoomId: string; hostPeerId: string }) {
-  const [state, dispatch] = useReducer(gameReducer, { ...initialState, roomId: initialRoomId, hostPeerId, turnOwnerId: hostPeerId });
+  const [state, dispatch] = useReducer(gameReducer, { ...initialState, roomId: initialRoomId, hostPeerId, turnOwnerId: "" });
 
   return (
     <GameContext.Provider value={{ state, dispatch }}>

@@ -3,18 +3,17 @@
 import { useGame } from "@/context/GameContext";
 import { useCallback } from "react";
 import { isLegalPlacement } from "@/lib/game/validation";
+import { TurnOrderOption } from "@/types/game";
 
 export function useGameLogic(isHost: boolean, sendMessage: (msg: any) => void) {
   const { state, dispatch } = useGame();
 
-  const placeTile = useCallback((tileId: string, x: number, y: number, rotation: number): boolean => {
+  const placeTile = useCallback((tileId: string, x: number, y: number, rotation: number) => {
     const myPeerId = isHost ? state.hostPeerId : state.guestPeerId;
     if (state.turnOwnerId !== myPeerId) return false;
 
-    const myHand = state.hands[myPeerId || ""] || [];
-    const tile = myHand.find(t => t.id === tileId);
-    
-    // Client-side pre-validation
+    // Local validation before sending intent or dispatching
+    const tile = state.hands[myPeerId || ""].find(t => t.id === tileId);
     if (!tile || !isLegalPlacement(state.board, tile, x, y)) return false;
 
     if (isHost) {
@@ -59,5 +58,17 @@ export function useGameLogic(isHost: boolean, sendMessage: (msg: any) => void) {
     }
   }, [state, isHost, dispatch, sendMessage]);
 
-  return { placeTile, rotateTile, passTurn };
+  const setTurnOrder = useCallback((config: TurnOrderOption) => {
+    if (isHost) {
+      dispatch({ type: "SET_TURN_ORDER", config });
+    } else {
+      sendMessage({
+        type: "PLAYER_INTENT",
+        action: "SET_TURN_ORDER",
+        payload: { config }
+      });
+    }
+  }, [isHost, dispatch, sendMessage]);
+
+  return { placeTile, rotateTile, passTurn, setTurnOrder };
 }
