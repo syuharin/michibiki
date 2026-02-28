@@ -3,7 +3,7 @@
 import { useGame } from "@/context/GameContext";
 import Tile from "./Tile";
 
-export default function Hand({ peerId, isMyTurn }: { peerId: string; isMyTurn: boolean }) {
+export default function Hand({ peerId, isMyTurn, onRotate }: { peerId: string; isMyTurn: boolean; onRotate: (tileId: string) => void }) {
   const { state } = useGame();
   const myHand = state.hands[peerId] || [];
 
@@ -19,6 +19,7 @@ export default function Hand({ peerId, isMyTurn }: { peerId: string; isMyTurn: b
               key={tile.id} 
               tile={tile} 
               isDraggable={isMyTurn}
+              onClick={() => isMyTurn && onRotate(tile.id)}
               className="hover:scale-105 transition-transform shadow-md" 
             />
           ))

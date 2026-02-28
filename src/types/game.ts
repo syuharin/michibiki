@@ -34,8 +34,9 @@ export interface GameState {
 }
 
 export type GameAction =
-  | { type: "START_GAME"; guestPeerId: string }
+  | { type: "START_GAME"; guestPeerId: string; initialDeck: Tile[]; initialHands: Record<string, Tile[]> }
   | { type: "PLACE_TILE"; tileId: string; x: number; y: number; rotation: number }
+  | { type: "ROTATE_HAND_TILE"; tileId: string }
   | { type: "CONFIRM_TURN" } // Deprecated: Use automated logic after PLACE_TILE or PASS_TURN for manual skip
   | { type: "PASS_TURN" }
   | { type: "SYNC_STATE"; state: GameState };

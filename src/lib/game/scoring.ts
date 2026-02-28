@@ -24,8 +24,9 @@ export function calculateConnectedGroup(board: Board, startX: number, startY: nu
   const queue: [number, number][] = [[startX, startY]];
   connected.add(`${startX},${startY}`);
 
-  while (queue.length > 0) {
-    const [x, y] = queue.shift()!;
+  let head = 0;
+  while (head < queue.length) {
+    const [x, y] = queue[head++];
     const currentTile = getTopTile(board, x, y);
     if (!currentTile) continue;
 

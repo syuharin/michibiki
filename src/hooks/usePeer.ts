@@ -12,6 +12,13 @@ export function usePeer(roomId: string, isHost: boolean) {
   const peerRef = useRef<Peer | null>(null);
   const connRef = useRef<DataConnection | null>(null);
 
+  // Keep a ref to the latest state to avoid stale closure issues in handleMessage
+  // while preventing effect re-runs that would reset the P2P connection.
+  const stateRef = useRef(state);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
   const sendMessage = useCallback((msg: P2PMessage) => {
     if (connRef.current?.open) {
       connRef.current.send(serializeMessage(msg));
@@ -57,12 +64,46 @@ export function usePeer(roomId: string, isHost: boolean) {
     };
 
     const handleMessage = (msg: P2PMessage) => {
+      const currentState = stateRef.current;
       switch (msg.type) {
         case "JOIN_ROOM":
           if (isHost) {
-            dispatch({ type: "START_GAME", guestPeerId: msg.guestPeerId });
-            // Host immediately sends initial state back
-            // (BOARD_SYNC will be handled in a separate effect or manually)
+            // Generate initial tiles and shuffle (Move from reducer to action creator)
+            const allTiles: any[] = [];
+            const players = [currentState.hostPeerId, msg.guestPeerId];
+            
+            players.forEach(pid => {
+              const types: any[] = ["STRAIGHT", "VERTICAL", "CORNER", "T", "X"];
+              for (let i = 0; i < 13; i++) {
+                // Use player index, tile index and a shorter random suffix for uniqueness
+                const uniqueId = `t-${pid === currentState.hostPeerId ? 'h' : 'g'}-${i}-${Math.random().toString(36).substring(2, 6)}`;
+                allTiles.push({
+                  id: uniqueId,
+                  type: types[i % types.length],
+                  ownerId: pid,
+                  rotation: 0,
+                  isReversal: i === 0 || i === 1,
+                  turnsLeft: i === 0 || i === 1 ? 5 : null,
+                });
+              }
+            });
+
+            const shuffled = [...allTiles].sort(() => Math.random() - 0.5);
+            const initialHands: Record<string, any[]> = {};
+            const initialDeck: any[] = [];
+            
+            players.forEach(pid => {
+              const playerTiles = shuffled.filter(t => t.ownerId === pid);
+              initialHands[pid] = playerTiles.slice(0, 3);
+              initialDeck.push(...playerTiles.slice(3));
+            });
+
+            dispatch({ 
+              type: "START_GAME", 
+              guestPeerId: msg.guestPeerId,
+              initialHands,
+              initialDeck
+            });
           }
           break;
         case "BOARD_SYNC":
@@ -81,22 +122,14 @@ export function usePeer(roomId: string, isHost: boolean) {
                   y: msg.payload.y, 
                   rotation: msg.payload.rotation 
                 });
-                dispatch({ type: "PASS_TURN" });
+                // PASS_TURN is now handled atomically inside PLACE_TILE reducer
                 break;
-              case "ROTATE_TILE": {
-                const cell = state.board[msg.payload.y][msg.payload.x];
-                if (cell.layers.length > 0) {
-                  const topTile = cell.layers[cell.layers.length - 1];
-                  dispatch({ 
-                    type: "PLACE_TILE", 
-                    tileId: topTile.id, 
-                    x: msg.payload.x, 
-                    y: msg.payload.y, 
-                    rotation: msg.payload.rotation 
-                  });
-                }
+              case "ROTATE_HAND_TILE":
+                dispatch({ 
+                  type: "ROTATE_HAND_TILE", 
+                  tileId: msg.payload.tileId
+                });
                 break;
-              }
               case "PASS_TURN":
               case "CONFIRM_TURN":
                 dispatch({ type: "PASS_TURN" });
@@ -112,12 +145,12 @@ export function usePeer(roomId: string, isHost: boolean) {
     };
   }, [roomId, isHost, dispatch, sendMessage]);
 
-  // Sync state from Host to Guest whenever it changes
+  // Sync state from Host to Guest whenever meaningful game state changes
   useEffect(() => {
-    if (isHost && isConnected && state.status !== "WAITING_FOR_GUEST") {
+    if (isHost && isConnected && state.status === "IN_PROGRESS") {
       sendMessage({ type: "BOARD_SYNC", state });
     }
-  }, [isHost, isConnected, state, sendMessage]);
+  }, [isHost, isConnected, state.board, state.hands, state.scores, state.turnOwnerId, state.status, sendMessage]);
 
   return { peerId, isConnected, sendMessage };
 }

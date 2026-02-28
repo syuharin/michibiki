@@ -17,7 +17,7 @@
     "sender": "Guest",
     "receiver": "Host",
     "payload": {
-      "action": "PLACE_TILE | ROTATE_TILE | CONFIRM_TURN",
+      "action": "PLACE_TILE | ROTATE_HAND_TILE | CONFIRM_TURN",
       "tileId": "string",
       "x": "number?",
       "y": "number?",

@@ -20,11 +20,14 @@ export default function Tile({ tile, isDraggable, onClick, className = "" }: Til
     data: tile,
   });
 
-  const style = {
+  const draggableStyle = {
     transform: CSS.Translate.toString(transform),
-    rotate: `${tile.rotation}deg`,
     zIndex: isDragging ? 100 : 1,
-    touchAction: "none", // Prevent scrolling while dragging on mobile
+    touchAction: isDraggable ? "none" : "auto" as const,
+  };
+
+  const contentStyle = {
+    rotate: `${tile.rotation}deg`,
   };
 
   const isOwnerHost = tile.ownerId === state.hostPeerId;
@@ -32,15 +35,17 @@ export default function Tile({ tile, isDraggable, onClick, className = "" }: Til
   return (
     <div 
       ref={setNodeRef}
-      style={style}
+      style={draggableStyle}
       {...listeners}
       {...attributes}
       onClick={onClick}
-      className={`relative w-16 h-16 bg-white border border-michibiki-gray-light flex items-center justify-center cursor-pointer transition-[border,background,rotate] ${className} ${isDraggable ? "hover:border-michibiki-black" : ""} ${tile.isReversal && tile.turnsLeft === 1 ? "reversal-pulse border-red-500 border-2" : ""} ${isDragging ? "shadow-2xl opacity-80" : ""}`}
+      className={`relative w-16 h-16 bg-white border border-michibiki-gray-light flex items-center justify-center cursor-pointer transition-[border,background] ${className} ${isDraggable ? "hover:border-michibiki-black" : ""} ${tile.isReversal && tile.turnsLeft === 1 ? "reversal-pulse border-red-500 border-2" : ""} ${isDragging ? "shadow-2xl opacity-80" : ""}`}
     >
-      <svg viewBox="0 0 100 100" className="w-full h-full">
-        <TileSVGContent type={tile.type} isHost={isOwnerHost} />
-      </svg>
+      <div style={contentStyle} className="w-full h-full flex items-center justify-center transition-transform duration-200">
+        <svg viewBox="0 0 100 100" className="w-full h-full">
+          <TileSVGContent type={tile.type} isHost={isOwnerHost} />
+        </svg>
+      </div>
       {tile.isReversal && (
         <div className="absolute top-0 right-0 bg-michibiki-black text-white text-[10px] px-1 rounded-bl font-mono">
           {tile.turnsLeft}

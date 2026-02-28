@@ -9,6 +9,7 @@ import RoomShare from "@/components/matchmaking/RoomShare";
 import Board from "./Board";
 import Hand from "./Hand";
 import { hasLegalMove } from "@/lib/game/validation";
+import { Tile } from "@/types/game";
 
 export default function GameContainer({ roomId, isHost }: { roomId: string; isHost: boolean }) {
   const { state } = useGame();
@@ -33,8 +34,16 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
     const { active, over } = event;
     if (over && over.id.toString().startsWith("cell-")) {
       const tileId = active.id.toString();
+      const tileData = active.data.current as Tile;
       const cellData = over.data.current as { x: number; y: number };
-      placeTile(tileId, cellData.x, cellData.y);
+      
+      if (tileData && cellData) {
+        const success = placeTile(tileId, cellData.x, cellData.y, tileData.rotation);
+        if (!success) {
+          console.warn("Illegal move attempted");
+          // Here you could trigger a shake animation or error sound
+        }
+      }
     }
   };
 
@@ -90,7 +99,7 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
             </div>
           </div>
 
-          <Board rotateTile={rotateTile} isHost={isHost} />
+          <Board isHost={isHost} />
 
           <div className="flex flex-col items-center gap-4">
             {isPassAvailable && (
@@ -102,13 +111,13 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
               </button>
             )}
             <p className="text-[10px] text-michibiki-gray font-bold uppercase">
-              {isMyTurn ? (isPassAvailable ? "置ける場所がありません" : "置いたタイルをクリックで回転") : "相手の行動を待っています"}
+              {isMyTurn ? (isPassAvailable ? "置ける場所がありません" : "手札のタイルをクリックで回転") : "相手の行動を待っています"}
             </p>
           </div>
         </main>
 
         <footer className="w-full max-w-4xl">
-          <Hand peerId={myPeerId || ""} isMyTurn={isMyTurn} />
+          <Hand peerId={myPeerId || ""} isMyTurn={isMyTurn} onRotate={rotateTile} />
         </footer>
       </div>
     </DndContext>

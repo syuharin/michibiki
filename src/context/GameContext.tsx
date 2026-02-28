@@ -2,6 +2,7 @@ import React, { createContext, useContext, useReducer, ReactNode } from "react";
 import { GameState, GameAction, Board, Tile, TileType } from "@/types/game";
 import { BOARD_SIZE } from "@/lib/constants/tiles";
 import { calculateConnectedGroup } from "@/lib/game/scoring";
+import { isLegalPlacement } from "@/lib/game/validation";
 
 const createEmptyBoard = (): Board => {
   const board: Board = [];
@@ -27,47 +28,78 @@ const initialState: GameState = {
   hands: {},
 };
 
+// Helper to handle turn transition, hand refilling, and game end detection
+function finalizeTurn(state: GameState, board: Board, hands: Record<string, Tile[]>, deck: Tile[], scores: Record<string, number>): GameState {
+  if (state.status !== "IN_PROGRESS") return state;
+  const currentPlayerId = state.turnOwnerId;
+  const newHands: Record<string, Tile[]> = {};
+  
+  // Ensure deterministic execution order across different JS environments
+  const playerIds = [state.hostPeerId, state.guestPeerId].filter((id): id is string => !!id);
+
+  // 1. Decrement turns for reversal tiles in the hand of the player who just moved
+  playerIds.forEach(pid => {
+    let currentHand = [...(hands[pid] || [])];
+    if (pid === currentPlayerId) {
+      currentHand = currentHand
+        .map(tile => (tile.isReversal && tile.turnsLeft !== null) ? { ...tile, turnsLeft: tile.turnsLeft - 1 } : tile)
+        .filter(tile => !tile.isReversal || tile.turnsLeft === null || tile.turnsLeft > 0);
+    }
+    newHands[pid] = currentHand;
+  });
+
+  // 2. Refill hands from deck
+  let newDeck = [...deck];
+  playerIds.forEach(pid => {
+    let currentHand = [...newHands[pid]];
+    while (currentHand.length < 3) {
+      const deckIdx = newDeck.findIndex(t => t.ownerId === pid);
+      if (deckIdx === -1) break;
+      const [tile] = newDeck.splice(deckIdx, 1);
+      currentHand = [...currentHand, tile];
+    }
+    newHands[pid] = currentHand;
+  });
+
+  // 3. Determine next turn owner (with skip logic)
+  let nextTurnOwner = state.turnOwnerId === state.hostPeerId ? (state.guestPeerId || state.hostPeerId) : state.hostPeerId;
+  
+  const isPlayerEmpty = (pid: string) => {
+    const hand = newHands[pid] || [];
+    const hasTilesInDeck = newDeck.some(t => t.ownerId === pid);
+    return hand.length === 0 && !hasTilesInDeck;
+  };
+
+  if (isPlayerEmpty(nextTurnOwner)) {
+    if (isPlayerEmpty(state.turnOwnerId)) {
+      return { ...state, board, hands: newHands, deck: newDeck, scores, status: "FINISHED" };
+    }
+    nextTurnOwner = state.turnOwnerId;
+  }
+
+  return {
+    ...state,
+    board,
+    hands: newHands,
+    deck: newDeck,
+    scores,
+    turnOwnerId: nextTurnOwner,
+  };
+}
+
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case "START_GAME": {
       // Prevent double initialization
       if (state.status !== "WAITING_FOR_GUEST") return state;
 
-      const allTiles: Tile[] = [];
-      const players = [state.hostPeerId, action.guestPeerId];
-      
-      players.forEach(pid => {
-        const types: TileType[] = ["STRAIGHT", "VERTICAL", "CORNER", "T", "X"];
-        for (let i = 0; i < 13; i++) {
-          const uniqueId = `tile-${pid}-${i}-${Math.random().toString(36).substring(2, 11)}`;
-          allTiles.push({
-            id: uniqueId,
-            type: types[i % types.length],
-            ownerId: pid,
-            rotation: 0,
-            isReversal: i === 0 || i === 1,
-            turnsLeft: i === 0 || i === 1 ? 5 : null,
-          });
-        }
-      });
-
-      const shuffled = [...allTiles].sort(() => Math.random() - 0.5);
-      const newHands: Record<string, Tile[]> = {};
-      const newDeck: Tile[] = [];
-      
-      players.forEach(pid => {
-        const playerTiles = shuffled.filter(t => t.ownerId === pid);
-        newHands[pid] = playerTiles.slice(0, 3);
-        newDeck.push(...playerTiles.slice(3));
-      });
-
       return {
         ...state,
         status: "IN_PROGRESS",
         guestPeerId: action.guestPeerId,
         turnOwnerId: state.hostPeerId,
-        hands: newHands,
-        deck: newDeck,
+        hands: action.initialHands,
+        deck: action.initialDeck,
         scores: { [state.hostPeerId]: 0, [action.guestPeerId]: 0 },
       };
     }
@@ -76,126 +108,61 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case "PLACE_TILE": {
       const { tileId, x, y, rotation } = action;
       const playerHand = state.hands[state.turnOwnerId] || [];
+      const tile = playerHand.find((t) => t.id === tileId);
+
+      // Validation: Ensure tile exists, placement is legal, AND it belongs to the current turn owner
+      if (!tile || tile.ownerId !== state.turnOwnerId || !isLegalPlacement(state.board, tile, x, y)) {
+        return state;
+      }
       
       const newBoard = [...state.board.map(row => [...row])];
       const cell = newBoard[y][x];
-      const existingTileInCell = cell.layers.find(t => t.id === tileId);
-      
-      let tile: Tile | undefined;
-      let isInitialPlacement = false;
-
-      if (existingTileInCell) {
-        tile = existingTileInCell;
-      } else {
-        tile = playerHand.find((t) => t.id === tileId);
-        isInitialPlacement = true;
-      }
-
-      if (!tile) return state;
-      
-      if (isInitialPlacement) {
-        if (cell.layers.length >= 2) return state;
-        if (cell.layers.length === 1 && !tile.isReversal) return state;
-      }
 
       const updatedTile: Tile = { 
         ...tile, 
-        id: isInitialPlacement ? `placed-${tile.id}-${Date.now()}` : tile.id,
         rotation: rotation as 0 | 90 | 180 | 270,
-        turnsLeft: isInitialPlacement ? null : tile.turnsLeft // Stop countdown if just placed
+        turnsLeft: null 
       };
       
-      if (existingTileInCell) {
-        const newLayers = [...cell.layers];
-        newLayers[newLayers.length - 1] = updatedTile;
-        newBoard[y][x] = { ...cell, layers: newLayers };
-      } else {
-        newBoard[y][x] = { ...cell, layers: [...cell.layers, updatedTile] };
-      }
+      newBoard[y][x] = { ...cell, layers: [...cell.layers, updatedTile] };
 
       const newScores = { ...state.scores };
-      if (isInitialPlacement) {
-        const connectedGroup = calculateConnectedGroup(newBoard, x, y);
-        newScores[state.turnOwnerId] = (newScores[state.turnOwnerId] || 0) + connectedGroup.size;
-      }
+      const connectedGroup = calculateConnectedGroup(newBoard, x, y);
+      newScores[state.turnOwnerId] = (newScores[state.turnOwnerId] || 0) + connectedGroup.size;
 
+      const nextHands = { ...state.hands };
+      nextHands[state.turnOwnerId] = playerHand.filter((t) => t.id !== tileId);
+
+      return finalizeTurn(state, newBoard, nextHands, state.deck, newScores);
+    }
+    case "ROTATE_HAND_TILE": {
+      const { tileId } = action;
+      const playerHand = state.hands[state.turnOwnerId] || [];
+      const tileIdx = playerHand.findIndex(t => t.id === tileId);
+      
+      // Ownership check: Ensure tile belongs to the current turn owner
+      if (tileIdx === -1 || playerHand[tileIdx].ownerId !== state.turnOwnerId) {
+        return state;
+      }
+      
       const newHands = { ...state.hands };
-      if (isInitialPlacement) {
-        newHands[state.turnOwnerId] = playerHand.filter((t) => t.id !== tileId);
-      }
-
+      const updatedHand = [...playerHand];
+      
+      const tile = updatedHand[tileIdx];
+      updatedHand[tileIdx] = {
+        ...tile,
+        rotation: ((tile.rotation + 90) % 360) as 0 | 90 | 180 | 270
+      };
+      newHands[state.turnOwnerId] = updatedHand;
+      
       return {
         ...state,
-        board: newBoard,
-        hands: newHands,
-        scores: newScores,
+        hands: newHands
       };
     }
     case "PASS_TURN":
     case "CONFIRM_TURN": {
-      const currentPlayerId = state.turnOwnerId;
-      
-      // 1. Decrement turns for reversal tiles IN HAND for the current player
-      const newHands: Record<string, Tile[]> = {};
-      Object.keys(state.hands).forEach(pid => {
-        let currentHand = [...state.hands[pid]];
-        if (pid === currentPlayerId) {
-          // Only decrement for the player who just finished their turn
-          currentHand = currentHand
-            .map(tile => {
-              if (tile.isReversal && tile.turnsLeft !== null) {
-                return { ...tile, turnsLeft: tile.turnsLeft - 1 };
-              }
-              return tile;
-            })
-            // Filter out tiles that reached 0 or less
-            .filter(tile => !tile.isReversal || tile.turnsLeft === null || tile.turnsLeft > 0);
-        }
-        newHands[pid] = currentHand;
-      });
-
-      // 2. Refill hands from deck
-      let newDeck = [...state.deck];
-      Object.keys(newHands).forEach(pid => {
-        let currentHand = [...newHands[pid]];
-        while (currentHand.length < 3) {
-          const deckIdx = newDeck.findIndex(t => t.ownerId === pid);
-          if (deckIdx === -1) break;
-          const [tile] = newDeck.splice(deckIdx, 1);
-          currentHand = [...currentHand, tile];
-        }
-        newHands[pid] = currentHand;
-      });
-
-      let nextTurnOwner = state.turnOwnerId === state.hostPeerId ? (state.guestPeerId || state.hostPeerId) : state.hostPeerId;
-      
-      // US2: Automatic skip logic
-      const isPlayerEmpty = (pid: string) => {
-        const hand = newHands[pid] || [];
-        const hasTilesInDeck = newDeck.some(t => t.ownerId === pid);
-        return hand.length === 0 && !hasTilesInDeck;
-      };
-
-      if (isPlayerEmpty(nextTurnOwner)) {
-        // If next player is empty, check if CURRENT player is also empty (Game Over)
-        if (isPlayerEmpty(state.turnOwnerId)) {
-          return {
-            ...state,
-            hands: newHands,
-            deck: newDeck,
-            status: "FINISHED"
-          };
-        }
-        // Otherwise, skip the empty player and stay with current
-        nextTurnOwner = state.turnOwnerId;
-      }
-
-      return {
-        ...state,
-        hands: newHands,
-        deck: newDeck,
-        turnOwnerId: nextTurnOwner,
-      };
+      return finalizeTurn(state, state.board, state.hands, state.deck, state.scores);
     }
     default:
       return state;

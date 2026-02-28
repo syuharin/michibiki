@@ -8,15 +8,9 @@ export const REVERSAL_TURNS = 5;
 export const TILE_CONNECTIONS: Record<string, ConnectionPoint[]> = {
   STRAIGHT: ["L", "R"],
   VERTICAL: ["U", "D"],
-  CORNER_LU: ["U", "L"],
-  CORNER_RU: ["U", "R"],
-  CORNER_LD: ["D", "L"],
-  CORNER_RD: ["D", "R"],
-  T_UDL: ["U", "D", "L"],
-  T_UDR: ["U", "D", "R"],
-  T_LRU: ["L", "R", "U"],
-  T_LRD: ["L", "R", "D"],
-  CROSS: ["U", "D", "L", "R"],
+  CORNER: ["U", "L"],
+  T: ["L", "R", "U"],
+  X: ["U", "D", "L", "R"],
 };
 
 export const ROTATION_MAP: Record<ConnectionPoint, Record<number, ConnectionPoint>> = {
