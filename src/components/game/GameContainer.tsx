@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { DndContext, DragEndEvent, MouseSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { useGame } from "@/context/GameContext";
 import { usePeer } from "@/hooks/usePeer";
@@ -13,10 +14,10 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
   const { isConnected, sendMessage, peerId } = usePeer(roomId, isHost);
   const { placeTile, rotateTile, confirmTurn } = useGameLogic(isHost, sendMessage);
 
-  const sensors = useSensors(
-    useSensor(MouseSensor, { activationConstraint: { distance: 10 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } })
-  );
+  const mouseSensor = useSensor(MouseSensor, { activationConstraint: { distance: 10 } });
+  const touchSensor = useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } });
+  const sensors = useMemo(() => [mouseSensor, touchSensor], [mouseSensor, touchSensor]);
+  const sensorsWrapper = useSensors(...sensors);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -45,7 +46,7 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
   const isMyTurn = state.turnOwnerId === myPeerId;
 
   return (
-    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensorsWrapper} onDragEnd={handleDragEnd}>
       <div className="flex min-h-screen flex-col items-center p-4 gap-6 bg-michibiki-white">
         {!isConnected && (
           <div className="fixed inset-0 z-[100] bg-michibiki-black/80 flex items-center justify-center backdrop-blur-sm">
@@ -82,7 +83,7 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
             </div>
           </div>
 
-          <Board rotateTile={rotateTile} />
+          <Board rotateTile={rotateTile} isHost={isHost} />
 
           <div className="flex flex-col items-center gap-2">
             {isMyTurn && (

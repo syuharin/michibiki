@@ -1,8 +1,9 @@
 "use client";
 
 import { useDraggable } from "@dnd-kit/core";
-import { Tile as TileType, ConnectionPoint } from "@/types/game";
-import { TILE_CONNECTIONS } from "@/lib/constants/tiles";
+import { CSS } from "@dnd-kit/utilities";
+import { Tile as TileType } from "@/types/game";
+import { useGame } from "@/context/GameContext";
 
 interface TileProps {
   tile: TileType;
@@ -12,23 +13,21 @@ interface TileProps {
 }
 
 export default function Tile({ tile, isDraggable, onClick, className = "" }: TileProps) {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+  const { state } = useGame();
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: tile.id,
     disabled: !isDraggable,
     data: tile,
   });
 
-  const style = transform ? {
-    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-    zIndex: 50,
-  } : undefined;
-
-  const rotationClasses = {
-    0: "rotate-0",
-    90: "rotate-90",
-    180: "rotate-180",
-    270: "rotate-270",
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    rotate: `${tile.rotation}deg`,
+    zIndex: isDragging ? 100 : 1,
+    touchAction: "none", // Prevent scrolling while dragging on mobile
   };
+
+  const isOwnerHost = tile.ownerId === state.hostPeerId;
 
   return (
     <div 
@@ -37,14 +36,13 @@ export default function Tile({ tile, isDraggable, onClick, className = "" }: Til
       {...listeners}
       {...attributes}
       onClick={onClick}
-      className={`relative w-16 h-16 bg-white border border-michibiki-gray-light flex items-center justify-center cursor-pointer transition-transform ${rotationClasses[tile.rotation]} ${className} ${isDraggable ? "hover:border-michibiki-black" : ""} ${tile.isReversal && tile.turnsLeft === 1 ? "reversal-pulse border-red-500 border-2" : ""}`}
+      className={`relative w-16 h-16 bg-white border border-michibiki-gray-light flex items-center justify-center cursor-pointer transition-[border,background,rotate] ${className} ${isDraggable ? "hover:border-michibiki-black" : ""} ${tile.isReversal && tile.turnsLeft === 1 ? "reversal-pulse border-red-500 border-2" : ""} ${isDragging ? "shadow-2xl opacity-80" : ""}`}
     >
       <svg viewBox="0 0 100 100" className="w-full h-full">
-        {/* Render connections based on tile type */}
-        <TileSVGContent type={tile.type} ownerId={tile.ownerId} />
+        <TileSVGContent type={tile.type} isHost={isOwnerHost} />
       </svg>
       {tile.isReversal && (
-        <div className="absolute top-0 right-0 bg-michibiki-black text-white text-[10px] px-1 rounded-bl">
+        <div className="absolute top-0 right-0 bg-michibiki-black text-white text-[10px] px-1 rounded-bl font-mono">
           {tile.turnsLeft}
         </div>
       )}
@@ -52,27 +50,41 @@ export default function Tile({ tile, isDraggable, onClick, className = "" }: Til
   );
 }
 
-function TileSVGContent({ type, ownerId }: { type: string, ownerId: string }) {
-  // In a real impl, we'd check if ownerId === hostPeerId
-  const isHost = true; 
+function TileSVGContent({ type, isHost }: { type: string, isHost: boolean }) {
   const stroke = isHost ? "black" : "#64748B";
-  const strokeWidth = 8;
+  const strokeWidth = 10;
 
   const renderLine = (x1: number, y1: number, x2: number, y2: number) => (
     <>
+      {/* Base stroke */}
       <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={stroke} strokeWidth={strokeWidth} strokeLinecap="round" />
+      {/* Double line effect for Guest (white core) */}
       {!isHost && (
         <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="white" strokeWidth={strokeWidth / 2} strokeLinecap="round" />
       )}
     </>
   );
 
+  const renderCorner = (cx: number, cy: number, r: number, startAngle: number, endAngle: number) => {
+    // Simplified corner using two lines for now to ensure connectivity logic clarity
+    // In a final version, this would be an SVG <path> arc
+    if (cx === 0 && cy === 0) return <>{renderLine(0, 50, 50, 50)}{renderLine(50, 0, 50, 50)}</>; // LU
+    if (cx === 100 && cy === 0) return <>{renderLine(100, 50, 50, 50)}{renderLine(50, 0, 50, 50)}</>; // RU
+    if (cx === 0 && cy === 100) return <>{renderLine(0, 50, 50, 50)}{renderLine(50, 100, 50, 50)}</>; // LD
+    return <>{renderLine(100, 50, 50, 50)}{renderLine(50, 100, 50, 50)}</>; // RD
+  };
+
   switch (type) {
     case "STRAIGHT":
-      return renderLine(0, 50, 100, 50);
     case "VERTICAL":
-      return renderLine(50, 0, 50, 100);
-    // Add more types as defined in constants
+      // Since the div container handles rotation, we only need one base orientation
+      return renderLine(0, 50, 100, 50);
+    case "CORNER":
+      return renderCorner(0, 0, 50, 0, 0); // Default corner shape
+    case "T":
+      return <>{renderLine(0, 50, 100, 50)}{renderLine(50, 50, 50, 0)}</>;
+    case "X":
+      return <>{renderLine(0, 50, 100, 50)}{renderLine(50, 0, 50, 100)}</>;
     default:
       return <circle cx="50" cy="50" r="10" fill={stroke} />;
   }

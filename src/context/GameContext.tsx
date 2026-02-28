@@ -3,7 +3,6 @@ import { GameState, GameAction, Board, Tile, TileType } from "@/types/game";
 import { BOARD_SIZE } from "@/lib/constants/tiles";
 import { calculateConnectedGroup } from "@/lib/game/scoring";
 
-
 const createEmptyBoard = (): Board => {
   const board: Board = [];
   for (let y = 0; y < BOARD_SIZE; y++) {
@@ -31,27 +30,28 @@ const initialState: GameState = {
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case "START_GAME": {
+      // Prevent double initialization
+      if (state.status !== "WAITING_FOR_GUEST") return state;
+
       const allTiles: Tile[] = [];
       const players = [state.hostPeerId, action.guestPeerId];
       
       players.forEach(pid => {
-        // Simple initial deck for each player based on rulebook (simplified for now)
         const types: TileType[] = ["STRAIGHT", "VERTICAL", "CORNER", "T", "X"];
         for (let i = 0; i < 13; i++) {
+          const uniqueId = `tile-${pid}-${i}-${Math.random().toString(36).substring(2, 11)}`;
           allTiles.push({
-            id: `${pid}-${i}`,
+            id: uniqueId,
             type: types[i % types.length],
             ownerId: pid,
             rotation: 0,
-            isReversal: i === 0 || i === 1, // First two are reversal
+            isReversal: i === 0 || i === 1,
             turnsLeft: i === 0 || i === 1 ? 5 : null,
           });
         }
       });
 
-      // Shuffle logic (simplified)
-      const shuffled = allTiles.sort(() => Math.random() - 0.5);
-      
+      const shuffled = [...allTiles].sort(() => Math.random() - 0.5);
       const newHands: Record<string, Tile[]> = {};
       const newDeck: Tile[] = [];
       
@@ -93,13 +93,16 @@ function gameReducer(state: GameState, action: GameAction): GameState {
 
       if (!tile) return state;
       
-      // Basic rule: can't place more than 2 layers, and only reversal tiles can overlap
       if (isInitialPlacement) {
         if (cell.layers.length >= 2) return state;
         if (cell.layers.length === 1 && !tile.isReversal) return state;
       }
 
-      const updatedTile = { ...tile, rotation: rotation as 0 | 90 | 180 | 270 };
+      const updatedTile: Tile = { 
+        ...tile, 
+        id: isInitialPlacement ? `placed-${tile.id}-${Date.now()}` : tile.id,
+        rotation: rotation as 0 | 90 | 180 | 270 
+      };
       
       if (existingTileInCell) {
         const newLayers = [...cell.layers];
@@ -109,14 +112,12 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         newBoard[y][x] = { ...cell, layers: [...cell.layers, updatedTile] };
       }
 
-      // Calculate score ONLY on initial placement
       const newScores = { ...state.scores };
       if (isInitialPlacement) {
         const connectedGroup = calculateConnectedGroup(newBoard, x, y);
         newScores[state.turnOwnerId] = (newScores[state.turnOwnerId] || 0) + connectedGroup.size;
       }
 
-      // Remove from hand ONLY on initial placement
       const newHands = { ...state.hands };
       if (isInitialPlacement) {
         newHands[state.turnOwnerId] = playerHand.filter((t) => t.id !== tileId);
@@ -130,10 +131,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
     case "CONFIRM_TURN": {
-      // 1. Decrement timers for reversal tiles owned by the player whose turn just ended
       const currentPlayerId = state.turnOwnerId;
       const newBoard = [...state.board.map(row => [...row])];
-      let tileRemoved = false;
 
       for (let y = 0; y < BOARD_SIZE; y++) {
         for (let x = 0; x < BOARD_SIZE; x++) {
@@ -143,11 +142,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
             if (topTile.ownerId === currentPlayerId && topTile.isReversal && topTile.turnsLeft !== null) {
               const nextTurns = topTile.turnsLeft - 1;
               if (nextTurns <= 0) {
-                // Remove the reversal tile
                 newBoard[y][x] = { ...cell, layers: cell.layers.slice(0, -1) };
-                tileRemoved = true;
               } else {
-                // Update timer
                 const updatedTile = { ...topTile, turnsLeft: nextTurns };
                 const newLayers = [...cell.layers];
                 newLayers[newLayers.length - 1] = updatedTile;
@@ -158,21 +154,21 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         }
       }
 
-      // 2. Replenish hand if a tile was removed or placed
-      // (Simplified: hand always tries to stay at 3 if deck allows)
-      const newHands = { ...state.hands };
-      const newDeck = [...state.deck];
+      // IMMUTABLE Update for Hands and Deck
+      let newDeck = [...state.deck];
+      const newHands: Record<string, Tile[]> = {};
       
-      const players = [state.hostPeerId, state.guestPeerId].filter(Boolean) as string[];
-      players.forEach(pid => {
-        while (newHands[pid].length < 3 && newDeck.some(t => t.ownerId === pid)) {
+      Object.keys(state.hands).forEach(pid => {
+        let currentHand = [...state.hands[pid]];
+        while (currentHand.length < 3) {
           const deckIdx = newDeck.findIndex(t => t.ownerId === pid);
+          if (deckIdx === -1) break;
           const [tile] = newDeck.splice(deckIdx, 1);
-          newHands[pid].push(tile);
+          currentHand = [...currentHand, tile];
         }
+        newHands[pid] = currentHand;
       });
 
-      // 3. Switch turns
       const nextTurnOwner = state.turnOwnerId === state.hostPeerId ? (state.guestPeerId || state.hostPeerId) : state.hostPeerId;
       
       return {
