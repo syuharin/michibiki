@@ -6,7 +6,7 @@ export type P2PMessage =
   | { type: "PLAYER_INTENT"; action: string; payload: any }
   | { type: "GAME_OVER"; winnerId: string; finalScores: Record<string, number> }
   | { type: "REMATCH_READY"; peerId: string; ready: boolean }
-  | { type: "REMATCH_START"; initialDecks: Record<string, any>; initialHands: Record<string, any>; turnOwnerId: string };
+  | { type: "REMATCH_START" };
 
 export function serializeMessage(msg: P2PMessage): string {
   return JSON.stringify(msg);

@@ -39,9 +39,9 @@ export default function Tile({ tile, isDraggable, onClick, className = "", style
   // Color logic: Special colors ONLY for reversal tiles
   const colors = isReversal
     ? (isOwnerHost 
-        ? { bg: "bg-indigo-50", border: "border-indigo-300", accent: "bg-indigo-600" }
-        : { bg: "bg-rose-50", border: "border-rose-300", accent: "bg-rose-600" })
-    : { bg: "bg-white", border: "border-michibiki-gray-light", accent: "bg-michibiki-black" };
+        ? { bg: "bg-indigo-50", border: "border-indigo-300", accent: "bg-indigo-600", pulse: "border-red-500" }
+        : { bg: "bg-rose-50", border: "border-rose-300", accent: "bg-rose-600", pulse: "border-sky-500" })
+    : { bg: "bg-white", border: "border-michibiki-gray-light", accent: "bg-michibiki-black", pulse: "" };
 
   return (
     <div 
@@ -50,7 +50,7 @@ export default function Tile({ tile, isDraggable, onClick, className = "", style
       {...listeners}
       {...attributes}
       onClick={onClick}
-      className={`relative w-16 h-16 ${colors.bg} ${colors.border} border flex items-center justify-center cursor-pointer transition-[border,background] ${className} ${isDraggable ? "hover:border-michibiki-black" : ""} ${tile.isReversal && tile.turnsLeft === 1 ? "reversal-pulse border-red-500 border-2" : ""} ${isDragging ? "opacity-0" : "shadow-md"}`}
+      className={`relative w-16 h-16 ${colors.bg} ${colors.border} border flex items-center justify-center cursor-pointer transition-[border,background] ${className} ${isDraggable ? "hover:border-michibiki-black" : ""} ${tile.isReversal && tile.turnsLeft === 1 && !isDragging ? `reversal-pulse ${colors.pulse} border-2` : ""} ${isDragging ? "opacity-0" : "shadow-md"}`}
     >
       <div style={contentStyle} className="w-full h-full flex items-center justify-center">
         <svg viewBox="0 0 100 100" className="w-full h-full">

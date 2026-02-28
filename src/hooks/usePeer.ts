@@ -121,12 +121,7 @@ export function usePeer(roomId: string, isHost: boolean) {
           break;
         case "REMATCH_START":
           if (!isHost) {
-            dispatch({ 
-              type: "RESET_GAME", 
-              initialDecks: {}, 
-              initialHands: {}, 
-              startingPlayerId: null 
-            });
+            dispatch({ type: "RESET_GAME" });
           }
           break;
       }
@@ -222,9 +217,9 @@ export function usePeer(roomId: string, isHost: boolean) {
     if (isHost && isConnected && state.status === "FINISHED" && !state.winnerId) {
       const winnerId = calculateWinner(state.scores, state.hostPeerId, state.guestPeerId || "");
       sendMessage({ type: "GAME_OVER", winnerId, finalScores: state.scores });
-      dispatch({ type: "SYNC_STATE", state: { ...state, winnerId } });
+      dispatch({ type: "SYNC_STATE", state: { ...stateRef.current, winnerId } });
     }
-  }, [isHost, isConnected, state.status, state.winnerId, state.scores, state.hostPeerId, state.guestPeerId, sendMessage, dispatch, state]);
+  }, [isHost, isConnected, state.status, state.winnerId, state.scores, state.hostPeerId, state.guestPeerId, sendMessage, dispatch]);
 
   useEffect(() => {
     if (isHost && isConnected && state.status === "REMATCH_WAITING") {
@@ -233,12 +228,7 @@ export function usePeer(roomId: string, isHost: boolean) {
       const allReady = players.every(pid => current.rematchReady[pid]);
       
       if (allReady) {
-        sendMessage({ 
-          type: "REMATCH_START", 
-          initialDecks: {}, 
-          initialHands: {}, 
-          turnOwnerId: "" 
-        });
+        sendMessage({ type: "REMATCH_START" });
         dispatch({ type: "RESET_GAME" });
       }
     }
