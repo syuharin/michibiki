@@ -1,0 +1,35 @@
+{
+  "JOIN_ROOM": {
+    "sender": "Guest",
+    "receiver": "Host",
+    "payload": {
+      "guestPeerId": "string"
+    }
+  },
+  "BOARD_SYNC": {
+    "sender": "Host",
+    "receiver": "Guest",
+    "payload": {
+      "gameState": "GameState"
+    }
+  },
+  "PLAYER_INTENT": {
+    "sender": "Guest",
+    "receiver": "Host",
+    "payload": {
+      "action": "PLACE_TILE | ROTATE_TILE | CONFIRM_TURN",
+      "tileId": "string",
+      "x": "number?",
+      "y": "number?",
+      "rotation": "number?"
+    }
+  },
+  "GAME_OVER": {
+    "sender": "Host",
+    "receiver": "Guest",
+    "payload": {
+      "winnerId": "string",
+      "finalScores": "Record<string, number>"
+    }
+  }
+}

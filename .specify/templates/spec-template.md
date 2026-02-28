@@ -75,6 +75,17 @@
 - What happens when [boundary condition]?
 - How does system handle [error scenario]?
 
+### Accessibility and Compliance *(mandatory)*
+
+- **Contrast Compliance**: How will this feature maintain WCAG AA (4.5:1) in a monotone theme?
+- **Color Vision Diversity**: How will this feature use line styles (Solid/Double) or icons to distinguish players/states?
+- **Responsive Layout**: How will the UI adapt between mobile and desktop?
+
+### Connectivity and Architecture *(mandatory)*
+
+- **P2P Strategy**: How will this feature use PeerJS for direct data synchronization?
+- **Serverless Compatibility**: Are there any dependencies that require a server? (If yes, justify and find a Vercel-native alternative).
+
 ## Requirements *(mandatory)*
 
 <!--

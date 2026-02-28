@@ -31,7 +31,12 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- [ ] **WCAG AA Compliance**: Does the design maintain a 4.5:1 contrast ratio and follow monotone aesthetics?
+- [ ] **P2P Implementation**: Does the solution use PeerJS without a centralized backend?
+- [ ] **Accessibility (Line Styles)**: Are player identities distinguished by line styles (Solid/Double) in addition to color?
+- [ ] **Responsiveness**: Is the interface optimized for both mobile and desktop?
+- [ ] **Vercel Native**: Can the feature run standalone on Vercel?
+- [ ] **Incrementalism**: Is the implementation following an "Outline-First, Detail-Later" approach?
 
 ## Project Structure
 

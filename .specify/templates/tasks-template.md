@@ -127,6 +127,13 @@ Examples of foundational tasks (adjust based on your project):
 
 **Independent Test**: [How to verify this story works on its own]
 
+### Accessibility and P2P Compliance Check (MANDATORY) ⚠️
+
+- [ ] TXXX [P] Verify WCAG AA contrast ratio (4.5:1) for all new UI elements
+- [ ] TXXX [P] Verify player identification via line styles (Solid/Double) for color vision diversity
+- [ ] TXXX [P] Verify P2P data synchronization and state consistency via PeerJS
+- [ ] TXXX [P] Test responsive behavior across mobile and desktop viewports
+
 ### Tests for User Story 3 (OPTIONAL - only if tests requested) ⚠️
 
 - [ ] T024 [P] [US3] Contract test for [endpoint] in tests/contract/test_[name].py

@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+@theme {
+  --color-michibiki-black: #0F172A;
+  --color-michibiki-white: #F8FAFC;
+  --color-michibiki-gray-dark: #334155;
+  --color-michibiki-gray: #64748B;
+  --color-michibiki-gray-light: #CBD5E1;
+}
+
+:root {
+  --michibiki-black: #0F172A;
+  --michibiki-white: #F8FAFC;
+}
+
+body {
+  background-color: var(--michibiki-white);
+  color: var(--michibiki-black);
+}
+
+/* Reversal Tile Pulse Animation */
+@keyframes reversal-pulse {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(0.98); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.reversal-pulse {
+  animation: reversal-pulse 2s infinite ease-in-out;
+}

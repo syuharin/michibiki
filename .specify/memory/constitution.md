@@ -1,50 +1,60 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+<sync_impact_report>
+- Version change: 0.1.0 → 1.0.0
+- List of modified principles:
+  - Principle 1: Monotone & WCAG AA (New)
+  - Principle 2: PeerJS P2P (New)
+  - Principle 3: Color Vision Accessibility (New)
+  - Principle 4: Maintainability & Responsive (New)
+  - Principle 5: Vercel Native (New)
+  - Principle 6: Incremental Implementation (New)
+- Added sections: Technical Stack, Development Workflow, Compliance Review.
+- Removed sections: None.
+- Templates requiring updates:
+  - ✅ .specify/templates/plan-template.md: Updated "Constitution Check" guidance.
+  - ✅ .specify/templates/spec-template.md: Added accessibility and P2P requirements sections.
+  - ✅ .specify/templates/tasks-template.md: Added accessibility and P2P testing categories.
+- Follow-up TODOs: None.
+</sync_impact_report>
+-->
+
+# みちびき (Michibiki) Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Monotone-Based WCAG AA Compliance
+All UI/UX design must strictly adhere to a monotone-based aesthetic while maintaining a minimum contrast ratio of 4.5:1 (WCAG AA) for all text and functional elements. This ensures maximum readability and a clean, professional appearance.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Serverless P2P Combat
+Multiplayer functionality must be implemented using PeerJS for direct peer-to-peer connectivity. The system should operate without a traditional backend server for matchmaking or game state management, relying on client-side logic and P2P data exchange.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Universal Design for Color Vision
+To support players with color vision deficiencies, identification of players (Host vs. Guest) and their respective game elements must not rely solely on color (e.g., Blue vs. Red). All player-specific elements must also use distinct line styles (e.g., Solid vs. Double lines) to ensure clarity for all users.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Maintainability & Responsive UX
+The codebase must prioritize long-term maintainability through clean abstractions and consistent patterns. The user interface must be fully responsive, providing a high-quality experience on both mobile and desktop devices without sacrificing functionality or ease of use.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Vercel-Native Deployment
+The application is designed to run as a standalone web application on Vercel. All features, including P2P connectivity and game logic, must be compatible with Vercel's deployment environment (Next.js App Router) without external server dependencies.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+### VI. Incremental Implementation
+Development must follow an "Outline-First, Detail-Later" approach. Initial phases should focus on the broad architectural framework and core loop before proceeding to detailed feature implementation and polishing.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+## Technical Stack
+- **Framework**: Next.js (App Router)
+- **Styling**: Tailwind CSS (Monotone-first)
+- **P2P Connectivity**: PeerJS
+- **Interactions**: @dnd-kit (Drag and Drop)
+- **Utilities**: qrcode.react (Room sharing)
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
-
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+## Development Workflow
+1. **Constitution Alignment**: All new features must be verified against these principles.
+2. **Accessibility-First**: WCAG compliance and color vision accessibility must be considered during the design phase.
+3. **P2P Testing**: Peer-to-peer connectivity and synchronization must be tested across different network environments.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
+- This constitution supersedes all other development practices within the "Michibiki" project.
+- Amendments to these principles require a version bump (Semantic Versioning) and a Sync Impact Report.
+- All Pull Requests and design documents must include a "Constitution Check" to ensure compliance.
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
-
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-02-28 | **Last Amended**: 2026-02-28
