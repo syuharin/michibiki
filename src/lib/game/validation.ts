@@ -8,6 +8,7 @@ import { MAX_LAYERS } from "@/lib/constants/tiles";
  * Maximum layers is 2.
  */
 export function isLegalPlacement(board: Board, tile: Tile, x: number, y: number): boolean {
+  if (y < 0 || y >= board.length || x < 0 || x >= (board[0]?.length || 0)) return false;
   const cell = board[y][x];
   const currentLayers = cell.layers.length;
 

@@ -18,9 +18,6 @@ export const TILE_CONNECTIONS: Record<string, ConnectionPoint[]> = {
   CORNER: ["U", "L"],
   T: ["U", "L", "R"],
   X: ["U", "D", "L", "R"],
-  // Shorthand mapping
-  I: ["L", "R"],
-  L: ["U", "L"],
 };
 
 export const ROTATION_MAP: Record<ConnectionPoint, Record<number, ConnectionPoint>> = {

@@ -1,6 +1,6 @@
 export type PlayerRole = "HOST" | "GUEST";
 
-export type TileType = "I" | "L" | "T" | "X" | "CORNER" | "STRAIGHT"; // Simplified for logic, mapping to rulebook shapes
+export type TileType = "I" | "L" | "T" | "X" | "CORNER" | "STRAIGHT" | "VERTICAL"; // Simplified for logic, mapping to rulebook shapes
 
 export type ConnectionPoint = "U" | "D" | "L" | "R";
 

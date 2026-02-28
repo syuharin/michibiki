@@ -73,19 +73,39 @@ export function usePeer(roomId: string, isHost: boolean) {
             const players = [currentState.hostPeerId, msg.guestPeerId];
             
             players.forEach(pid => {
-              const types: any[] = ["STRAIGHT", "VERTICAL", "CORNER", "T", "X"];
-              for (let i = 0; i < 13; i++) {
-                // Use player index, tile index and a shorter random suffix for uniqueness
+              // Rulebook: 13 tiles per player
+              // STRAIGHT: 2 (1 is reversal)
+              // VERTICAL: 1
+              // CORNER: 4
+              // T: 5 (1 is reversal)
+              // X: 1
+              const tilePool: { type: TileType; isReversal: boolean }[] = [
+                { type: "STRAIGHT", isReversal: true },
+                { type: "STRAIGHT", isReversal: false },
+                { type: "VERTICAL", isReversal: false },
+                { type: "CORNER", isReversal: false },
+                { type: "CORNER", isReversal: false },
+                { type: "CORNER", isReversal: false },
+                { type: "CORNER", isReversal: false },
+                { type: "T", isReversal: true },
+                { type: "T", isReversal: false },
+                { type: "T", isReversal: false },
+                { type: "T", isReversal: false },
+                { type: "T", isReversal: false },
+                { type: "X", isReversal: false },
+              ];
+
+              tilePool.forEach((t, i) => {
                 const uniqueId = `t-${pid === currentState.hostPeerId ? 'h' : 'g'}-${i}-${Math.random().toString(36).substring(2, 6)}`;
                 allTiles.push({
                   id: uniqueId,
-                  type: types[i % types.length],
+                  type: t.type,
                   ownerId: pid,
                   rotation: 0,
-                  isReversal: i === 0 || i === 1,
-                  turnsLeft: i === 0 || i === 1 ? 5 : null,
+                  isReversal: t.isReversal,
+                  turnsLeft: t.isReversal ? 5 : null,
                 });
-              }
+              });
             });
 
             const shuffled = [...allTiles].sort(() => Math.random() - 0.5);
