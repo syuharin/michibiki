@@ -8,16 +8,26 @@ import { useGameLogic } from "@/hooks/useGameLogic";
 import RoomShare from "@/components/matchmaking/RoomShare";
 import Board from "./Board";
 import Hand from "./Hand";
+import { hasLegalMove } from "@/lib/game/validation";
 
 export default function GameContainer({ roomId, isHost }: { roomId: string; isHost: boolean }) {
   const { state } = useGame();
   const { isConnected, sendMessage, peerId } = usePeer(roomId, isHost);
-  const { placeTile, rotateTile, confirmTurn } = useGameLogic(isHost, sendMessage);
+  const { placeTile, rotateTile, passTurn } = useGameLogic(isHost, sendMessage);
 
   const mouseSensor = useSensor(MouseSensor, { activationConstraint: { distance: 10 } });
   const touchSensor = useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } });
   const sensors = useMemo(() => [mouseSensor, touchSensor], [mouseSensor, touchSensor]);
   const sensorsWrapper = useSensors(...sensors);
+
+  const myPeerId = isHost ? state.hostPeerId : state.guestPeerId;
+  const isMyTurn = state.turnOwnerId === myPeerId;
+  const myHand = state.hands[myPeerId || ""] || [];
+  
+  const isPassAvailable = useMemo(() => 
+    isMyTurn && !hasLegalMove(state.board, myHand),
+    [isMyTurn, state.board, myHand]
+  );
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -41,9 +51,6 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
       </div>
     );
   }
-
-  const myPeerId = isHost ? state.hostPeerId : state.guestPeerId;
-  const isMyTurn = state.turnOwnerId === myPeerId;
 
   return (
     <DndContext sensors={sensorsWrapper} onDragEnd={handleDragEnd}>
@@ -85,17 +92,17 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
 
           <Board rotateTile={rotateTile} isHost={isHost} />
 
-          <div className="flex flex-col items-center gap-2">
-            {isMyTurn && (
+          <div className="flex flex-col items-center gap-4">
+            {isPassAvailable && (
               <button 
-                onClick={confirmTurn}
+                onClick={passTurn}
                 className="px-12 py-4 bg-michibiki-black text-michibiki-white font-black text-xl hover:translate-y-1 transition-all active:translate-y-2 shadow-[0_4px_0_rgb(51,65,85)] active:shadow-none"
               >
-                ターン終了
+                パス
               </button>
             )}
             <p className="text-[10px] text-michibiki-gray font-bold uppercase">
-              {isMyTurn ? "置いたタイルをクリックで回転" : "相手の行動を待っています"}
+              {isMyTurn ? (isPassAvailable ? "置ける場所がありません" : "置いたタイルをクリックで回転") : "相手の行動を待っています"}
             </p>
           </div>
         </main>

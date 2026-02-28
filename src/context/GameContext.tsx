@@ -131,6 +131,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         scores: newScores,
       };
     }
+    case "PASS_TURN":
     case "CONFIRM_TURN": {
       const currentPlayerId = state.turnOwnerId;
       
@@ -166,8 +167,29 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         newHands[pid] = currentHand;
       });
 
-      const nextTurnOwner = state.turnOwnerId === state.hostPeerId ? (state.guestPeerId || state.hostPeerId) : state.hostPeerId;
+      let nextTurnOwner = state.turnOwnerId === state.hostPeerId ? (state.guestPeerId || state.hostPeerId) : state.hostPeerId;
       
+      // US2: Automatic skip logic
+      const isPlayerEmpty = (pid: string) => {
+        const hand = newHands[pid] || [];
+        const hasTilesInDeck = newDeck.some(t => t.ownerId === pid);
+        return hand.length === 0 && !hasTilesInDeck;
+      };
+
+      if (isPlayerEmpty(nextTurnOwner)) {
+        // If next player is empty, check if CURRENT player is also empty (Game Over)
+        if (isPlayerEmpty(state.turnOwnerId)) {
+          return {
+            ...state,
+            hands: newHands,
+            deck: newDeck,
+            status: "FINISHED"
+          };
+        }
+        // Otherwise, skip the empty player and stay with current
+        nextTurnOwner = state.turnOwnerId;
+      }
+
       return {
         ...state,
         hands: newHands,

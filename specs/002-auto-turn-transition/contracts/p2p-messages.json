@@ -1,0 +1,10 @@
+{
+  "PLAYER_INTENT": {
+    "sender": "Guest",
+    "receiver": "Host",
+    "payload": {
+      "action": "PLACE_TILE | ROTATE_TILE | PASS_TURN",
+      "note": "CONFIRM_TURN has been deprecated for manual use; PASS_TURN is its successor for 'no moves' cases."
+    }
+  }
+}

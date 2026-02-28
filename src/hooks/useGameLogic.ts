@@ -12,6 +12,7 @@ export function useGameLogic(isHost: boolean, sendMessage: (msg: any) => void) {
 
     if (isHost) {
       dispatch({ type: "PLACE_TILE", tileId, x, y, rotation: 0 });
+      dispatch({ type: "PASS_TURN" });
     } else {
       sendMessage({
         type: "PLAYER_INTENT",
@@ -48,20 +49,20 @@ export function useGameLogic(isHost: boolean, sendMessage: (msg: any) => void) {
     }
   }, [state, isHost, dispatch, sendMessage]);
 
-  const confirmTurn = useCallback(() => {
+  const passTurn = useCallback(() => {
     const myPeerId = isHost ? state.hostPeerId : state.guestPeerId;
     if (state.turnOwnerId !== myPeerId) return;
 
     if (isHost) {
-      dispatch({ type: "CONFIRM_TURN" });
+      dispatch({ type: "PASS_TURN" });
     } else {
       sendMessage({
         type: "PLAYER_INTENT",
-        action: "CONFIRM_TURN",
+        action: "PASS_TURN",
         payload: {}
       });
     }
   }, [state, isHost, dispatch, sendMessage]);
 
-  return { placeTile, rotateTile, confirmTurn };
+  return { placeTile, rotateTile, passTurn };
 }

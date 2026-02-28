@@ -81,6 +81,7 @@ export function usePeer(roomId: string, isHost: boolean) {
                   y: msg.payload.y, 
                   rotation: msg.payload.rotation 
                 });
+                dispatch({ type: "PASS_TURN" });
                 break;
               case "ROTATE_TILE": {
                 const cell = state.board[msg.payload.y][msg.payload.x];
@@ -96,8 +97,9 @@ export function usePeer(roomId: string, isHost: boolean) {
                 }
                 break;
               }
+              case "PASS_TURN":
               case "CONFIRM_TURN":
-                dispatch({ type: "CONFIRM_TURN" });
+                dispatch({ type: "PASS_TURN" });
                 break;
             }
           }
@@ -112,7 +114,7 @@ export function usePeer(roomId: string, isHost: boolean) {
 
   // Sync state from Host to Guest whenever it changes
   useEffect(() => {
-    if (isHost && isConnected && state.status === "IN_PROGRESS") {
+    if (isHost && isConnected && state.status !== "WAITING_FOR_GUEST") {
       sendMessage({ type: "BOARD_SYNC", state });
     }
   }, [isHost, isConnected, state, sendMessage]);
