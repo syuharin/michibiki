@@ -6,6 +6,7 @@ import { useGame } from "@/context/GameContext";
 import { P2PMessage, deserializeMessage, serializeMessage } from "@/lib/p2p/protocol";
 import { Tile, TileType } from "@/types/game";
 import { calculateWinner } from "@/lib/game/scoring";
+import { REVERSAL_TURNS } from "@/lib/constants/tiles";
 
 /**
  * Fisher-Yates Shuffle algorithm for uniform distribution.
@@ -164,7 +165,7 @@ export function usePeer(roomId: string, isHost: boolean) {
           ownerId: pid,
           rotation: 0,
           isReversal: t.isReversal,
-          turnsLeft: t.isReversal ? 5 : null,
+          turnsLeft: t.isReversal ? REVERSAL_TURNS : null,
         });
       });
     });

@@ -2,6 +2,7 @@
 
 import { useGame } from "@/context/GameContext";
 import { Trophy, Handshake, LogOut, RotateCcw } from "lucide-react";
+import { useUI } from "@/context/UIContext";
 
 interface ResultModalProps {
   isHost: boolean;
@@ -11,8 +12,10 @@ interface ResultModalProps {
 
 export default function ResultModal({ isHost, onRematch, onReturnToLobby }: ResultModalProps) {
   const { state } = useGame();
+  const { isRulebookOpen } = useUI();
   
   if (state.status !== "FINISHED" && state.status !== "REMATCH_WAITING") return null;
+  if (isRulebookOpen) return null;
 
   const myPeerId = isHost ? state.hostPeerId : state.guestPeerId;
   const isWinner = state.winnerId === myPeerId;

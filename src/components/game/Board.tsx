@@ -10,7 +10,7 @@ export default function Board() {
   const { state } = useGame();
 
   return (
-    <div className="grid grid-cols-[2rem_1fr] grid-rows-[2rem_1fr] w-full max-w-[500px] gap-1 items-center">
+    <div className="grid grid-cols-[1.5rem_1fr] grid-rows-[1.5rem_1fr] w-full max-w-[min(90vw,60vh)] gap-0.5 items-center mx-auto">
       {/* Top-Left Empty Space */}
       <div />
       
@@ -19,7 +19,7 @@ export default function Board() {
         {COLUMN_LABELS.map((label) => (
           <div 
             key={`col-label-${label}`} 
-            className="flex items-center justify-center font-black text-[10px] text-michibiki-gray uppercase tracking-widest"
+            className="flex items-center justify-center font-black text-[min(2.5vw,10px)] text-michibiki-gray uppercase tracking-widest"
           >
             {label}
           </div>
@@ -31,7 +31,7 @@ export default function Board() {
         {ROW_LABELS.map((label) => (
           <div 
             key={`row-label-${label}`} 
-            className="flex items-center justify-end font-black text-[10px] text-michibiki-gray pr-2"
+            className="flex items-center justify-end font-black text-[min(2.5vw,10px)] text-michibiki-gray pr-1.5"
           >
             {label}
           </div>
@@ -39,7 +39,7 @@ export default function Board() {
       </div>
 
       {/* Actual 6x6 Game Board */}
-      <div className="grid grid-cols-6 grid-rows-6 gap-0.5 bg-michibiki-black p-0.5 border-4 border-michibiki-black shadow-2xl aspect-square">
+      <div className="grid grid-cols-6 grid-rows-6 gap-0.5 bg-michibiki-black p-0.5 border-2 sm:border-4 border-michibiki-black shadow-2xl aspect-square">
         {state.board.map((row, y) =>
           row.map((cell, x) => (
             <CellComponent key={`${x}-${y}`} cell={cell} />

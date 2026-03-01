@@ -17,6 +17,8 @@ Auto-generated from all feature plans. Last updated: 2026-02-28
 - N/A (Client-side UI) (006-board-coordinate-markers)
 - TypeScript 5.0+, Next.js 14/15 (App Router) + PeerJS, Tailwind CSS, lucide-react, @dnd-kit (007-game-result-no-cards)
 - Ephemeral (Client-side memory) (007-game-result-no-cards)
+- TypeScript / Next.js (App Router) + Tailwind CSS, PeerJS, @dnd-kit, lucide-react, react-markdown (New) (009-rulebook-display)
+- Client-side only (Rules from static Markdown file) (009-rulebook-display)
 
 - TypeScript / Next.js 14+ (App Router) + PeerJS, @dnd-kit, Tailwind CSS, qrcode.react (001-michibiki-game-core)
 
@@ -37,9 +39,9 @@ npm test; npm run lint
 TypeScript / Next.js 14+ (App Router): Follow standard conventions
 
 ## Recent Changes
+- 009-rulebook-display: Added TypeScript / Next.js (App Router) + Tailwind CSS, PeerJS, @dnd-kit, lucide-react, react-markdown (New)
+- 008-mobile-ui-fixes: Added [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION] + [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
 - 007-game-result-no-cards: Added TypeScript 5.0+, Next.js 14/15 (App Router) + PeerJS, Tailwind CSS, lucide-react, @dnd-kit
-- 007-game-result-no-cards: Added [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION] + [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
-- 006-board-coordinate-markers: Added TypeScript / Next.js 14+ (App Router) + React, Tailwind CSS, @dnd-kit (for board interactions)
 
 
 <!-- MANUAL ADDITIONS START -->
