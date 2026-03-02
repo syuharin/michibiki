@@ -50,3 +50,9 @@ export type GameAction =
   | { type: "SYNC_STATE"; state: GameState }
   | { type: "SET_REMATCH_READY"; peerId: string; ready: boolean }
   | { type: "RESET_GAME" };
+
+export interface RulebookContent {
+  content: string;
+  isLoading: boolean;
+  error: string | null;
+}

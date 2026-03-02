@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 @theme {
   --color-michibiki-black: #0F172A;
@@ -16,6 +17,7 @@
 body {
   background-color: var(--michibiki-white);
   color: var(--michibiki-black);
+  touch-action: none;
 }
 
 /* Reversal Tile Pulse Animation */

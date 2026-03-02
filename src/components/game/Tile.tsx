@@ -50,7 +50,7 @@ export default function Tile({ tile, isDraggable, onClick, className = "", style
       {...listeners}
       {...attributes}
       onClick={onClick}
-      className={`relative w-16 h-16 ${colors.bg} ${colors.border} border flex items-center justify-center cursor-pointer transition-[border,background] ${className} ${isDraggable ? "hover:border-michibiki-black" : ""} ${tile.isReversal && tile.turnsLeft === 1 && !isDragging ? `reversal-pulse ${colors.pulse} border-2` : ""} ${isDragging ? "opacity-0" : "shadow-md"}`}
+      className={`relative w-full h-full ${colors.bg} ${colors.border} border flex items-center justify-center cursor-pointer transition-[border,background] ${className} ${isDraggable ? "hover:border-michibiki-black" : ""} ${tile.isReversal && tile.turnsLeft === 1 && !isDragging ? `reversal-pulse ${colors.pulse} border-2` : ""} ${isDragging ? "opacity-0" : "shadow-md"}`}
     >
       <div style={contentStyle} className="w-full h-full flex items-center justify-center">
         <svg viewBox="0 0 100 100" className="w-full h-full">

@@ -53,13 +53,7 @@ function finalizeTurn(state: GameState, board: Board, hands: Record<string, Tile
     newHands[pid] = currentHand;
   });
 
-  // 1.5 Decrement turns for reversal tiles on the board (only if owned by current player)
-  const newBoard = board.map(row => row.map(cell => ({
-    ...cell,
-    layers: cell.layers
-      .map(tile => (tile.isReversal && tile.turnsLeft !== null && tile.ownerId === currentPlayerId) ? { ...tile, turnsLeft: tile.turnsLeft - 1 } : tile)
-      .filter(tile => !tile.isReversal || tile.turnsLeft === null || tile.turnsLeft > 0)
-  })));
+  const newBoard = board;
 
   // 2. Refill hands from deck
   playerIds.forEach(pid => {

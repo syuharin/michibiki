@@ -13,7 +13,7 @@ export default function Deck({ count }: DeckProps) {
       <div className="absolute -top-2 -right-2 bg-michibiki-black text-michibiki-white text-[10px] font-black px-1.5 py-0.5 min-w-[20px] text-center rounded-full border border-michibiki-white shadow-sm">
         {count}
       </div>
-      <p className="text-[8px] font-bold uppercase tracking-widest text-michibiki-gray mt-1">Deck</p>
+      <p className="text-[8px] font-bold uppercase tracking-widest text-michibiki-gray-dark mt-1">Deck</p>
     </div>
   );
 }

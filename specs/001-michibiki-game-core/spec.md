@@ -66,18 +66,18 @@ As a player, I want my score to increase every time I place a tile based on the 
 
 ### User Story 4 - Reversal Tile Mechanics (Priority: P2)
 
-As a player, I want to use special reversal tiles to overwrite existing tiles, knowing they will disappear after 5 turns, to strategically disrupt my opponent's pipeline.
+As a player, I want to use special reversal tiles to overwrite existing tiles, knowing they will expire if kept in hand too long, to strategically manage my resources and disrupt my opponent.
 
 **Why this priority**: Adds strategic depth and fulfills the "Reversal Tile" requirement.
 
-**Independent Test**: Place a reversal tile; verify the countdown starts at 5 and decreases each time the *placing* player completes a turn. Verify it disappears and a new tile is drawn when it hits 0.
+**Independent Test**: Keep a reversal tile in hand; verify the countdown starts at 5 and decreases each time the *current* player completes a turn. Verify it disappears from hand and a new tile is drawn when it hits 0.
 
 **Acceptance Scenarios**:
 
-1. **Given** I have a reversal tile, **When** I place it on an occupied cell, **Then** it covers the existing tile and becomes the active tile for pathfinding.
-2. **Given** a reversal tile on the board, **When** I finish my turn, **Then** its countdown decreases by 1.
-3. **Given** a reversal tile has 1 turn left, **When** it is visible on the board, **Then** it displays a pulse animation.
-4. **Given** a reversal tile countdown reaches 0, **When** the turn ends, **Then** it is removed from the board, the player's cumulative score remains unchanged, and the player draws from the deck until their hand has 3 tiles.
+1. **Given** I have a reversal tile, **When** I place it on an occupied cell, **Then** it covers the existing tile and becomes permanent (countdown stops).
+2. **Given** a reversal tile in my hand, **When** I finish my turn without playing it, **Then** its countdown decreases by 1.
+3. **Given** a reversal tile in hand has 1 turn left, **When** viewed in the hand UI, **Then** it displays a pulse animation.
+4. **Given** a reversal tile countdown in hand reaches 0, **When** the turn ends, **Then** it is removed from the hand and replaced by a new draw from the deck.
 
 ## Edge Cases
 
@@ -109,7 +109,7 @@ As a player, I want to use special reversal tiles to overwrite existing tiles, k
 - **FR-003**: System MUST manage a 6x6 grid where tiles can be placed and rotated.
 - **FR-004**: System MUST calculate connected pipeline groups using BFS/DFS.
 - **FR-005**: System MUST apply cumulative scoring: `Score = Score + ConnectedGroupSize`.
-- **FR-006**: System MUST track individual countdowns (5 turns) for reversal tiles.
+- **FR-006**: System MUST track individual countdowns (5 turns) for reversal tiles while they are in the player's hand.
 - **FR-007**: System MUST provide visual feedback (pulse) for reversal tiles with 1 turn remaining.
 - **FR-008**: System MUST automatically remove reversal tiles and replenish the player's hand after expiration.
 - **FR-009**: System MUST distinguish players using both color and line style (Solid vs. Double).
