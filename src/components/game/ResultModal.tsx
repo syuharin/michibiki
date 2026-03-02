@@ -46,15 +46,15 @@ export default function ResultModal({ isHost, onRematch, onReturnToLobby }: Resu
             <>
               <Trophy className="w-16 h-16 text-michibiki-black" />
               <h2 className="text-4xl font-black italic tracking-tighter uppercase">Victory</h2>
-              <p className="text-xs font-bold text-michibiki-gray uppercase">Congratulations!</p>
+              <p className="text-xs font-bold text-michibiki-gray-dark uppercase">Congratulations!</p>
             </>
           ) : (
             <>
               <div className="w-16 h-16 border-4 border-michibiki-black rounded-none flex items-center justify-center grayscale">
                 <span className="text-4xl font-black">!</span>
               </div>
-              <h2 className="text-4xl font-black italic tracking-tighter uppercase text-michibiki-gray">Defeat</h2>
-              <p className="text-xs font-bold text-michibiki-gray uppercase">Better luck next time</p>
+              <h2 className="text-4xl font-black italic tracking-tighter uppercase text-michibiki-black">Defeat</h2>
+              <p className="text-xs font-bold text-michibiki-gray-dark uppercase">Better luck next time</p>
             </>
           )}
         </div>
@@ -62,11 +62,11 @@ export default function ResultModal({ isHost, onRematch, onReturnToLobby }: Resu
         {/* Scores */}
         <div className="w-full grid grid-cols-2 gap-4 border-y-2 border-michibiki-black py-6">
           <div className="flex flex-col items-center">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-michibiki-gray">You</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-michibiki-gray-dark">You</p>
             <p className="text-3xl font-black tabular-nums">{myScore}</p>
           </div>
           <div className="flex flex-col items-center border-l-2 border-michibiki-black">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-michibiki-gray">Opponent</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-michibiki-gray-dark">Opponent</p>
             <p className="text-3xl font-black tabular-nums">{opponentScore}</p>
           </div>
         </div>
@@ -74,12 +74,12 @@ export default function ResultModal({ isHost, onRematch, onReturnToLobby }: Resu
         {/* Rematch Status */}
         {(isReady || opponentReady) && (
           <div className="flex flex-col items-center gap-2">
-            <p className="text-[10px] font-black text-michibiki-gray uppercase tracking-widest">Rematch Readiness</p>
+            <p className="text-[10px] font-black text-michibiki-gray-dark uppercase tracking-widest">Rematch Readiness</p>
             <div className="flex gap-3">
-              <div className={`px-3 py-1 text-[10px] font-black border-2 transition-colors ${isReady ? "bg-michibiki-black text-white border-michibiki-black" : "border-michibiki-gray-light text-michibiki-gray"}`}>
+              <div className={`px-3 py-1 text-[10px] font-black border-2 transition-colors ${isReady ? "bg-michibiki-black text-white border-michibiki-black" : "border-michibiki-gray text-michibiki-gray-dark"}`}>
                 YOU: {isReady ? "READY" : "WAITING"}
               </div>
-              <div className={`px-3 py-1 text-[10px] font-black border-2 transition-colors ${opponentReady ? "bg-michibiki-black text-white border-michibiki-black" : "border-michibiki-gray-light text-michibiki-gray"}`}>
+              <div className={`px-3 py-1 text-[10px] font-black border-2 transition-colors ${opponentReady ? "bg-michibiki-black text-white border-michibiki-black" : "border-michibiki-gray text-michibiki-gray-dark"}`}>
                 OPPONENT: {opponentReady ? "READY" : "WAITING"}
               </div>
             </div>
@@ -93,7 +93,7 @@ export default function ResultModal({ isHost, onRematch, onReturnToLobby }: Resu
             disabled={isReady}
             className={`w-full py-4 flex items-center justify-center gap-3 font-black text-xl transition-all shadow-[0_4px_0_rgb(51,65,85)] active:translate-y-1 active:shadow-none ${
               isReady 
-                ? "bg-michibiki-gray-light text-michibiki-gray cursor-not-allowed opacity-50 shadow-none translate-y-1" 
+                ? "bg-michibiki-gray text-michibiki-gray-dark cursor-not-allowed opacity-50 shadow-none translate-y-1" 
                 : "bg-michibiki-black text-white hover:bg-michibiki-gray-dark"
             }`}
           >
@@ -103,7 +103,7 @@ export default function ResultModal({ isHost, onRematch, onReturnToLobby }: Resu
           
           <button
             onClick={onReturnToLobby}
-            className="w-full py-3 flex items-center justify-center gap-2 font-bold text-michibiki-black border-2 border-michibiki-black hover:bg-michibiki-gray-light transition-colors"
+            className="w-full py-3 flex items-center justify-center gap-2 font-bold text-michibiki-black border-2 border-michibiki-black hover:bg-michibiki-black hover:text-white transition-colors"
           >
             <LogOut className="w-5 h-5" />
             Return to Lobby

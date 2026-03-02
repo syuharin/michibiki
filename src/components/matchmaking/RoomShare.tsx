@@ -2,13 +2,18 @@
 
 import { QRCodeSVG } from "qrcode.react";
 import { Copy, Check } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function RoomShare({ roomId }: { roomId: string }) {
   const [copied, setCopied] = useState(false);
-  const url = `${typeof window !== "undefined" ? window.location.origin : ""}/room/${roomId}`;
+  const [url, setUrl] = useState("");
+
+  useEffect(() => {
+    setUrl(`${window.location.origin}/room/${roomId}`);
+  }, [roomId]);
 
   const copyToClipboard = () => {
+    if (!url) return;
     navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -26,7 +31,7 @@ export default function RoomShare({ roomId }: { roomId: string }) {
         <input 
           readOnly 
           value={url} 
-          className="flex-1 p-2 text-sm border border-michibiki-gray rounded bg-michibiki-white overflow-hidden text-ellipsis"
+          className="flex-1 p-2 text-sm border border-michibiki-gray-dark rounded bg-michibiki-white overflow-hidden text-ellipsis text-michibiki-black"
         />
         <button 
           onClick={copyToClipboard}
@@ -36,7 +41,7 @@ export default function RoomShare({ roomId }: { roomId: string }) {
         </button>
       </div>
       
-      <p className="text-sm text-michibiki-gray italic">
+      <p className="text-sm text-michibiki-gray-dark italic">
         対戦相手にこのURLを共有するか、QRコードをスキャンしてもらってください。
       </p>
     </div>

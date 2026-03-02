@@ -21,7 +21,7 @@ export default function TurnOrderSelector({ currentOption, onSelect, isHost }: T
         <h2 className="text-xl font-black uppercase tracking-tighter">Turn Order</h2>
         <div className="flex flex-col gap-2">
           {currentOption === "UNSELECTED" ? (
-            <div className="flex items-center gap-3 p-3 border-2 border-dashed border-michibiki-gray text-michibiki-gray animate-pulse">
+            <div className="flex items-center gap-3 p-3 border-2 border-dashed border-michibiki-gray-dark text-michibiki-gray-dark animate-pulse">
               <p className="font-bold text-sm">ホストが選択中...</p>
             </div>
           ) : (
@@ -29,11 +29,11 @@ export default function TurnOrderSelector({ currentOption, onSelect, isHost }: T
               <div className={`px-4 py-2 font-black text-sm border-2 ${
                 currentOption === "HOST_FIRST" ? "bg-michibiki-white border-michibiki-black" : 
                 currentOption === "GUEST_FIRST" ? "bg-michibiki-black text-white border-michibiki-black" :
-                "bg-michibiki-gray-light border-michibiki-gray"
+                "bg-michibiki-gray text-white border-michibiki-gray-dark"
               }`}>
                 {currentOption === "HOST_FIRST" ? "後攻" : currentOption === "GUEST_FIRST" ? "先行" : "ランダム"}
               </div>
-              <p className="text-xs font-bold text-michibiki-gray">
+              <p className="text-xs font-bold text-michibiki-gray-dark">
                 {currentOption === "HOST_FIRST" ? "あなたは後攻です" : 
                  currentOption === "GUEST_FIRST" ? "あなたは先行です" : 
                  "開始時に決定されます"}
@@ -56,7 +56,7 @@ export default function TurnOrderSelector({ currentOption, onSelect, isHost }: T
             className={`flex flex-col items-center justify-center p-4 border-2 transition-all ${
               currentOption === opt.id
                 ? "bg-michibiki-black text-white border-michibiki-black scale-[1.02]"
-                : "bg-white text-michibiki-black border-michibiki-gray-light hover:border-michibiki-black"
+                : "bg-white text-michibiki-black border-michibiki-gray hover:border-michibiki-black"
             }`}
           >
             <span className={`text-lg font-black mb-1 px-3 py-1 border-2 transition-colors ${
@@ -67,10 +67,10 @@ export default function TurnOrderSelector({ currentOption, onSelect, isHost }: T
                       ? "bg-white text-michibiki-black border-michibiki-black border-double border-4"
                       : "bg-michibiki-black text-white border-white border-dashed border-2")
                 : (opt.id === "HOST_FIRST" 
-                    ? "bg-white text-michibiki-black border-michibiki-gray-light border-solid opacity-50" 
+                    ? "bg-white text-michibiki-black border-michibiki-gray border-solid opacity-50" 
                     : opt.id === "GUEST_FIRST"
-                      ? "bg-white text-michibiki-black border-michibiki-gray-light border-double border-4 opacity-50"
-                      : "bg-white text-michibiki-gray border-michibiki-gray-light opacity-50")
+                      ? "bg-white text-michibiki-black border-michibiki-gray border-double border-4 opacity-50"
+                      : "bg-white text-michibiki-gray-dark border-michibiki-gray opacity-50")
             }`}>
               {opt.label}
             </span>

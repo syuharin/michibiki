@@ -13,7 +13,7 @@ const config: Config = {
         "michibiki-black": "#0F172A", // slate-900
         "michibiki-white": "#F8FAFC", // slate-50
         "michibiki-gray-dark": "#334155", // slate-700
-        "michibiki-gray": "#64748B", // slate-500
+        "michibiki-gray": "#57657A", // slate-600
         "michibiki-gray-light": "#CBD5E1", // slate-300
       },
     },

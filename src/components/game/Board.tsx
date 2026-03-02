@@ -19,7 +19,7 @@ export default function Board() {
         {COLUMN_LABELS.map((label) => (
           <div 
             key={`col-label-${label}`} 
-            className="flex items-center justify-center font-black text-[min(2.5vw,10px)] text-michibiki-gray uppercase tracking-widest"
+            className="flex items-center justify-center font-black text-[min(2.5vw,10px)] text-michibiki-gray-dark uppercase tracking-widest"
           >
             {label}
           </div>
@@ -31,7 +31,7 @@ export default function Board() {
         {ROW_LABELS.map((label) => (
           <div 
             key={`row-label-${label}`} 
-            className="flex items-center justify-end font-black text-[min(2.5vw,10px)] text-michibiki-gray pr-1.5"
+            className="flex items-center justify-end font-black text-[min(2.5vw,10px)] text-michibiki-gray-dark pr-1.5"
           >
             {label}
           </div>
@@ -59,7 +59,7 @@ function CellComponent({ cell }: { cell: CellType }) {
   return (
     <div 
       ref={setNodeRef}
-      className={`bg-michibiki-white w-full h-full flex items-center justify-center relative ${isOver ? "bg-michibiki-gray-light" : ""}`}
+      className={`bg-michibiki-white w-full h-full flex items-center justify-center relative ${isOver ? "bg-michibiki-gray text-white" : ""}`}
     >
       {cell.layers.length > 0 && (
         <Tile tile={cell.layers[cell.layers.length - 1]} />

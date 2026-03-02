@@ -135,7 +135,7 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
                   disabled={state.turnOrderConfig === "UNSELECTED"}
                   className={`w-full py-4 font-black text-xl transition-all shadow-[0_4px_0_rgb(51,65,85)] active:translate-y-1 active:shadow-none ${
                     state.turnOrderConfig === "UNSELECTED"
-                      ? "bg-michibiki-gray-light text-michibiki-gray cursor-not-allowed opacity-50"
+                      ? "bg-michibiki-gray text-michibiki-white cursor-not-allowed opacity-50"
                       : "bg-michibiki-black text-white hover:bg-michibiki-gray-dark"
                   }`}
                 >
@@ -147,7 +147,7 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
         </div>
 
         {isHost && <RoomShare roomId={roomId} />}
-        {!isHost && !state.guestPeerId && <p className="text-lg text-michibiki-gray">ホストに接続中...</p>}
+        {!isHost && !state.guestPeerId && <p className="text-lg text-michibiki-gray-dark">ホストに接続中...</p>}
         
         <div className="fixed bottom-4 right-4 text-xs font-mono bg-michibiki-black text-white p-2 rounded">
           STATUS: {isConnected ? "CONNECTED" : "CONNECTING..."} | ID: {peerId}
@@ -177,7 +177,7 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
           <div className="fixed inset-0 z-[100] bg-michibiki-black/80 flex items-center justify-center backdrop-blur-sm">
             <div className="bg-white p-8 rounded-lg shadow-2xl text-center space-y-4">
               <h2 className="text-2xl font-black">接続が切れました</h2>
-              <p className="text-michibiki-gray">再接続を試みています...</p>
+              <p className="text-michibiki-gray-dark">再接続を試みています...</p>
               <div className="w-12 h-12 border-4 border-michibiki-black border-t-transparent rounded-full animate-spin mx-auto"></div>
             </div>
           </div>
@@ -187,7 +187,7 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
           <h1 className="text-xl sm:text-3xl font-black italic tracking-tighter text-michibiki-black leading-none">MICHIBIKI</h1>
           <div className="flex gap-4 sm:gap-6 items-center">
             <div className="text-right">
-              <p className="text-[8px] font-bold text-michibiki-gray uppercase">Room</p>
+              <p className="text-[8px] font-bold text-michibiki-gray-dark uppercase">Room</p>
               <p className="font-mono text-xs sm:text-sm leading-none text-michibiki-black">{roomId}</p>
             </div>
             <div className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full ${isConnected ? "bg-green-500" : "bg-red-500 animate-pulse"}`}></div>
@@ -198,28 +198,28 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
           <main className="flex-1 flex flex-col items-center gap-2 sm:gap-4 py-1 sm:py-2 overflow-y-auto overflow-x-hidden">
             {/* Stats Bar */}
             <div className="flex justify-between w-full items-center bg-white border-2 border-michibiki-black p-1.5 sm:p-3 shadow-sm shrink-0">
-              <div className={`p-1 sm:p-2 px-2 sm:px-3 border-2 transition-all ${isMyTurn ? "border-michibiki-black bg-michibiki-black text-white" : "border-michibiki-gray-light text-michibiki-gray grayscale opacity-50"}`}>
+              <div className={`p-1 sm:p-2 px-2 sm:px-3 border-2 transition-all ${isMyTurn ? "border-michibiki-black bg-michibiki-black text-white" : "border-michibiki-gray text-michibiki-gray-dark grayscale opacity-50"}`}>
                 <p className="text-[6px] sm:text-[8px] font-black uppercase tracking-widest opacity-70">Status</p>
-                <p className="text-[10px] sm:text-sm font-black leading-none">{isMyTurn ? "YOUR TURN" : "OPPONENT'S TURN"}</p>
+                <p className="text-[10px] sm:text-sm font-black leading-none">{isMyTurn ? "YOUR TURN" : "RIVAL TURN"}</p>
               </div>
 
-              <div className="flex gap-2 sm:gap-4 items-center">
-                <div className="text-right p-1 sm:p-2 px-2 sm:px-3 border-2 border-michibiki-black flex items-center gap-2 sm:gap-4">
+              <div className="flex gap-1.5 sm:gap-4 items-center">
+                <div className="text-right p-1 sm:p-2 px-1.5 sm:px-3 border-2 border-michibiki-black flex items-center gap-1.5 sm:gap-4">
                   <Deck count={myDeckCount} />
-                  <div>
-                    <p className="text-[6px] sm:text-[8px] font-bold uppercase tracking-widest text-michibiki-gray">You</p>
-                    <p className="text-sm sm:text-xl font-black tracking-tighter leading-none">{myScore}</p>
+                  <div aria-live="polite">
+                    <p className="text-[6px] sm:text-[8px] font-bold uppercase tracking-widest text-michibiki-gray-dark">You</p>
+                    <p className="text-3xl sm:text-5xl font-black tracking-tighter leading-none">{myScore}</p>
                   </div>
-                  <Trophy className="w-3 h-3 sm:w-5 sm:h-5 text-michibiki-black" />
+                  <Trophy className="w-4 h-4 sm:w-8 sm:h-8 text-michibiki-black" />
                 </div>
                 {state.status === "IN_PROGRESS" && opponentPeerId && (
-                  <div className="text-right p-1 sm:p-2 px-2 sm:px-3 border-2 border-michibiki-gray-light flex items-center gap-2 sm:gap-4 bg-michibiki-white">
+                  <div className="text-right p-1 sm:p-2 px-1.5 sm:px-3 border-2 border-michibiki-gray-dark flex items-center gap-1.5 sm:gap-4 bg-michibiki-white">
                     <Deck count={opponentDeckCount} />
-                    <div>
-                      <p className="text-[6px] sm:text-[8px] font-bold uppercase tracking-widest text-michibiki-gray">Opponent</p>
-                      <p className="text-sm sm:text-xl font-black tracking-tighter leading-none">{opponentScore}</p>
+                    <div aria-live="polite">
+                      <p className="text-[6px] sm:text-[8px] font-bold uppercase tracking-widest text-michibiki-gray-dark">Rival</p>
+                      <p className="text-3xl sm:text-5xl font-black tracking-tighter leading-none">{opponentScore}</p>
                     </div>
-                    <Trophy className="w-3 h-3 sm:w-5 sm:h-5 text-michibiki-gray" />
+                    <Trophy className="w-4 h-4 sm:w-8 sm:h-8 text-michibiki-gray-dark" />
                   </div>
                 )}
               </div>
@@ -236,7 +236,7 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
                   パス
                 </button>
               )}
-              <p className="text-[8px] sm:text-[10px] text-michibiki-gray font-bold uppercase">
+              <p className="text-[8px] sm:text-[10px] text-michibiki-gray-dark font-bold uppercase">
                 {isMyTurn ? (isPassAvailable ? "置ける場所がありません" : "手札をタップで回転") : "相手を待っています"}
               </p>
             </div>

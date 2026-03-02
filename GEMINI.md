@@ -19,6 +19,8 @@ Auto-generated from all feature plans. Last updated: 2026-02-28
 - Ephemeral (Client-side memory) (007-game-result-no-cards)
 - TypeScript / Next.js (App Router) + Tailwind CSS, PeerJS, @dnd-kit, lucide-react, react-markdown (New) (009-rulebook-display)
 - Client-side only (Rules from static Markdown file) (009-rulebook-display)
+- TypeScript (Next.js 14+ App Router) + React, Tailwind CSS, PeerJS, @dnd-kit (010-accessibility-score-ui)
+- Client-side state (P2P), LocalStorage for preferences (010-accessibility-score-ui)
 
 - TypeScript / Next.js 14+ (App Router) + PeerJS, @dnd-kit, Tailwind CSS, qrcode.react (001-michibiki-game-core)
 
@@ -39,9 +41,9 @@ npm test; npm run lint
 TypeScript / Next.js 14+ (App Router): Follow standard conventions
 
 ## Recent Changes
+- 010-accessibility-score-ui: Added TypeScript (Next.js 14+ App Router) + React, Tailwind CSS, PeerJS, @dnd-kit
 - 009-rulebook-display: Added TypeScript / Next.js (App Router) + Tailwind CSS, PeerJS, @dnd-kit, lucide-react, react-markdown (New)
 - 008-mobile-ui-fixes: Added [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION] + [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
-- 007-game-result-no-cards: Added TypeScript 5.0+, Next.js 14/15 (App Router) + PeerJS, Tailwind CSS, lucide-react, @dnd-kit
 
 
 <!-- MANUAL ADDITIONS START -->

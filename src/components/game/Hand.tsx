@@ -37,7 +37,7 @@ export default function Hand({
       {!isVertical && (
         <h3 className="font-black text-[10px] sm:text-xs text-michibiki-gray-dark uppercase tracking-widest flex items-center gap-2 mb-1">
           Your Hand 
-          <span className={`px-2 py-0.5 rounded-full text-[8px] ${isMyTurn ? "bg-michibiki-black text-white" : "bg-michibiki-gray-light text-michibiki-gray"}`}>
+          <span className={`px-2 py-0.5 rounded-full text-[8px] ${isMyTurn ? "bg-michibiki-black text-white" : "bg-michibiki-gray text-michibiki-white"}`}>
             {isMyTurn ? "YOUR TURN" : "WAITING"}
           </span>
         </h3>
@@ -85,7 +85,7 @@ export default function Hand({
 
           })
         ) : (
-          <p className="text-michibiki-gray italic py-2 text-center text-xs">No tiles</p>
+          <p className="text-michibiki-gray-dark italic py-2 text-center text-xs">No tiles</p>
         )}
       </div>
     </div>

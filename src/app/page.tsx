@@ -33,7 +33,7 @@ export default function Home() {
 
           <div className="relative flex py-5 items-center">
             <div className="flex-grow border-t border-michibiki-gray-light"></div>
-            <span className="flex-shrink mx-4 text-michibiki-gray text-sm">または</span>
+            <span className="flex-shrink mx-4 text-michibiki-gray-dark text-sm">または</span>
             <div className="flex-grow border-t border-michibiki-gray-light"></div>
           </div>
 
@@ -54,7 +54,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="pt-12 text-sm text-michibiki-gray">
+        <div className="pt-12 text-sm text-michibiki-gray-dark">
           <p>© 2026 Michibiki Project. WCAG AA Compliant.</p>
         </div>
       </div>
