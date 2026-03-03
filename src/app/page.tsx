@@ -7,7 +7,10 @@ export default function Home() {
   const router = useRouter();
   const [roomId, setRoomId] = useState("");
 
+  const [isCreating, setIsCreating] = useState(false);
+
   const createRoom = () => {
+    setIsCreating(true);
     // Generate a random 6-character short code
     const newId = Math.random().toString(36).substring(2, 8).toUpperCase();
     router.push(`/room/${newId}?host=true`);
@@ -17,7 +20,7 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center justify-center p-6 bg-michibiki-white">
       <div className="max-w-md w-full space-y-8 text-center">
         <h1 className="text-6xl font-black tracking-tighter text-michibiki-black">
-          みちびき
+          MICHIBIKI
         </h1>
         <p className="text-xl text-michibiki-gray-dark">
           P2P サーバーレス・ボードゲーム
@@ -26,9 +29,12 @@ export default function Home() {
         <div className="space-y-4 pt-8">
           <button
             onClick={createRoom}
-            className="w-full py-4 bg-michibiki-black text-michibiki-white text-xl font-bold rounded-none border-b-4 border-michibiki-gray-dark hover:translate-y-1 hover:border-b-0 transition-all shadow-lg"
+            disabled={isCreating}
+            className={`w-full py-4 bg-michibiki-black text-michibiki-white text-xl font-bold rounded-none border-b-4 border-michibiki-gray-dark transition-all shadow-lg active:translate-y-1 active:border-b-0 ${
+              isCreating ? "opacity-70 cursor-not-allowed translate-y-1 border-b-0" : "hover:bg-gray-900"
+            }`}
           >
-            対戦室を作成する
+            {isCreating ? "作成中..." : "対戦室を作成する"}
           </button>
 
           <div className="relative flex py-5 items-center">

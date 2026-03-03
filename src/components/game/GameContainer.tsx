@@ -119,10 +119,10 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
         
         <div className="w-full max-w-xl flex flex-col gap-6">
           {!state.guestPeerId ? (
-            <div className="text-xl font-bold animate-pulse text-center text-michibiki-gray-dark">対戦相手を待っています...</div>
+            <div className="text-xl font-bold animate-pulse text-center text-michibiki-gray-dark uppercase">Waiting for RIVAL...</div>
           ) : (
             <>
-              <div className="text-xl font-bold text-center text-michibiki-black">対戦相手が参加しました！</div>
+              <div className="text-xl font-bold text-center text-michibiki-black uppercase">RIVAL JOINED!</div>
               <TurnOrderSelector 
                 currentOption={state.turnOrderConfig} 
                 onSelect={setTurnOrder} 
@@ -206,18 +206,18 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
               <div className="flex gap-1.5 sm:gap-4 items-center">
                 <div className="text-right p-1 sm:p-2 px-1.5 sm:px-3 border-2 border-michibiki-black flex items-center gap-1.5 sm:gap-4">
                   <Deck count={myDeckCount} />
-                  <div aria-live="polite">
-                    <p className="text-[6px] sm:text-[8px] font-bold uppercase tracking-widest text-michibiki-gray-dark">You</p>
-                    <p className="text-3xl sm:text-5xl font-black tracking-tighter leading-none">{myScore}</p>
+                  <div aria-live="polite" className="bg-michibiki-black text-michibiki-white px-3 py-1.5 -mx-1.5">
+                    <p className="text-[6px] sm:text-[10px] font-black uppercase tracking-widest opacity-80">You</p>
+                    <p className="text-4xl sm:text-7xl font-black tracking-tighter leading-none">{myScore}</p>
                   </div>
-                  <Trophy className="w-4 h-4 sm:w-8 sm:h-8 text-michibiki-black" />
+                  <Trophy className="w-5 h-5 sm:w-10 sm:h-10 text-michibiki-black" />
                 </div>
                 {state.status === "IN_PROGRESS" && opponentPeerId && (
-                  <div className="text-right p-1 sm:p-2 px-1.5 sm:px-3 border-2 border-michibiki-gray-dark flex items-center gap-1.5 sm:gap-4 bg-michibiki-white">
+                  <div className="text-right p-1 sm:p-2 px-1.5 sm:px-3 border-2 border-michibiki-gray-dark flex items-center gap-1.5 sm:gap-4 bg-michibiki-white opacity-70">
                     <Deck count={opponentDeckCount} />
                     <div aria-live="polite">
                       <p className="text-[6px] sm:text-[8px] font-bold uppercase tracking-widest text-michibiki-gray-dark">Rival</p>
-                      <p className="text-3xl sm:text-5xl font-black tracking-tighter leading-none">{opponentScore}</p>
+                      <p className="text-2xl sm:text-4xl font-black tracking-tighter leading-none">{opponentScore}</p>
                     </div>
                     <Trophy className="w-4 h-4 sm:w-8 sm:h-8 text-michibiki-gray-dark" />
                   </div>

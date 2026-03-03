@@ -4,7 +4,7 @@ import { UIProvider } from "@/context/UIContext";
 import RulebookManager from "@/components/rulebook/RulebookManager";
 
 export const metadata: Metadata = {
-  title: "みちびき - Michibiki Pipeline",
+  title: "MICHIBIKI - Michibiki Pipeline",
   description: "P2P Serverless Board Game",
 };
 

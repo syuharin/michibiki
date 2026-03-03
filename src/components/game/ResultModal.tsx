@@ -33,7 +33,7 @@ export default function ResultModal({ isHost, onRematch, onReturnToLobby }: Resu
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-michibiki-black/60 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="w-full max-w-md bg-white border-4 border-michibiki-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] p-8 flex flex-col items-center gap-8 animate-in zoom-in-95 duration-300">
+      <div className="w-full max-w-md bg-white border-4 border-michibiki-black shadow-[8px_8px_0_0_rgba(0,0,0,1)] p-8 flex flex-col items-center gap-8 animate-in zoom-in-95 duration-300 overflow-hidden">
         
         {/* Result Header */}
         <div className="flex flex-col items-center gap-2 text-center">
@@ -60,14 +60,14 @@ export default function ResultModal({ isHost, onRematch, onReturnToLobby }: Resu
         </div>
 
         {/* Scores */}
-        <div className="w-full grid grid-cols-2 gap-4 border-y-2 border-michibiki-black py-6">
-          <div className="flex flex-col items-center">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-michibiki-gray-dark">You</p>
-            <p className="text-3xl font-black tabular-nums">{myScore}</p>
+        <div className="w-full grid grid-cols-2 gap-4 border-y-2 border-michibiki-black py-4">
+          <div className="flex flex-col items-center bg-michibiki-black text-michibiki-white py-4 -my-4 h-full justify-center">
+            <p className="text-[12px] font-black uppercase tracking-widest opacity-80 mb-1">You</p>
+            <p className="text-5xl font-black tabular-nums tracking-tighter">{myScore}</p>
           </div>
-          <div className="flex flex-col items-center border-l-2 border-michibiki-black">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-michibiki-gray-dark">Opponent</p>
-            <p className="text-3xl font-black tabular-nums">{opponentScore}</p>
+          <div className="flex flex-col items-center justify-center opacity-60">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-michibiki-gray-dark mb-1">RIVAL</p>
+            <p className="text-3xl font-black tabular-nums tracking-tighter">{opponentScore}</p>
           </div>
         </div>
 
@@ -80,7 +80,7 @@ export default function ResultModal({ isHost, onRematch, onReturnToLobby }: Resu
                 YOU: {isReady ? "READY" : "WAITING"}
               </div>
               <div className={`px-3 py-1 text-[10px] font-black border-2 transition-colors ${opponentReady ? "bg-michibiki-black text-white border-michibiki-black" : "border-michibiki-gray text-michibiki-gray-dark"}`}>
-                OPPONENT: {opponentReady ? "READY" : "WAITING"}
+                RIVAL: {opponentReady ? "READY" : "WAITING"}
               </div>
             </div>
           </div>
@@ -98,7 +98,7 @@ export default function ResultModal({ isHost, onRematch, onReturnToLobby }: Resu
             }`}
           >
             <RotateCcw className={`w-6 h-6 ${isReady ? "animate-[spin_3s_linear_infinite]" : ""}`} />
-            {isReady ? "Waiting for Opponent..." : "Rematch"}
+            {isReady ? "Waiting for RIVAL..." : "Rematch"}
           </button>
           
           <button
