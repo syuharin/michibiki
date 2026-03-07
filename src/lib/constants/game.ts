@@ -1,0 +1,1 @@
+export const SCORE_EFFECT_DURATION = 2000;

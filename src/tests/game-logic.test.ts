@@ -22,8 +22,12 @@ const createMockState = (overrides: Partial<GameState> = {}): GameState => ({
   guestPeerId: "guest-id",
   board: createEmptyBoard(),
   scores: { "host-id": 0, "guest-id": 0 },
-  deck: [],
+  decks: { "host-id": [], "guest-id": [] },
   hands: { "host-id": [], "guest-id": [] },
+  startingPlayerId: null,
+  rematchReady: {},
+  winnerId: null,
+  effects: [],
   ...overrides,
 });
 
@@ -132,5 +136,34 @@ describe("Reversal Tile Logic", () => {
 
     expect(newState.hands["host-id"][0].turnsLeft).toBe(4);
     expect(newState.hands["guest-id"][0].turnsLeft).toBe(5); // Guest's tile should remain at 5
+  });
+});
+
+describe("Score Gain Feedback", () => {
+  it("should trigger a ScoreEffectEvent when a scoring move is made", () => {
+    const tile1: Tile = { id: "t1", type: "STRAIGHT", ownerId: "host-id", rotation: 0, isReversal: false, turnsLeft: null };
+    const tile2: Tile = { id: "t2", type: "STRAIGHT", ownerId: "host-id", rotation: 0, isReversal: false, turnsLeft: null };
+    
+    const state = createMockState({
+      board: createEmptyBoard(),
+      hands: { "host-id": [tile1, tile2], "guest-id": [] },
+      effects: []
+    });
+
+    // 1. Place first tile at (0,0)
+    const state1 = gameReducer(state, { type: "PLACE_TILE", tileId: "t1", x: 0, y: 0, rotation: 0 });
+    expect(state1.effects).toHaveLength(1);
+    expect(state1.effects[0].totalPoints).toBe(1);
+
+    // 2. Place second tile at (1,0) - connects to (0,0)
+    // Need to ensure it's still host's turn or override turn logic for simple test
+    const stateWithTurn = { ...state1, turnOwnerId: "host-id", status: "IN_PROGRESS" as const };
+    const state2 = gameReducer(stateWithTurn, { type: "PLACE_TILE", tileId: "t2", x: 1, y: 0, rotation: 0 });
+    
+    expect(state2.effects).toHaveLength(2);
+    const lastEffect = state2.effects[1];
+    expect(lastEffect.totalPoints).toBe(2); // (0,0) and (1,0) connected
+    expect(lastEffect.path).toContainEqual({ x: 0, y: 0 });
+    expect(lastEffect.path).toContainEqual({ x: 1, y: 0 });
   });
 });

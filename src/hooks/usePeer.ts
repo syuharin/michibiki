@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import Peer, { DataConnection } from "peerjs";
 import { useGame } from "@/context/GameContext";
 import { P2PMessage, deserializeMessage, serializeMessage } from "@/lib/p2p/protocol";
-import { Tile, TileType } from "@/types/game";
+import { Tile, TileType, ScoreEffectEvent } from "@/types/game";
 import { calculateWinner } from "@/lib/game/scoring";
 import { REVERSAL_TURNS } from "@/lib/constants/tiles";
 
@@ -125,6 +125,9 @@ export function usePeer(roomId: string, isHost: boolean) {
             dispatch({ type: "RESET_GAME" });
           }
           break;
+        case "SCORE_GAIN_EFFECT":
+          dispatch({ type: "ADD_SCORE_EFFECT", effect: msg.effect });
+          break;
       }
     };
 
@@ -200,7 +203,8 @@ export function usePeer(roomId: string, isHost: boolean) {
 
   useEffect(() => {
     if (isHost && isConnected && (state.status === "IN_PROGRESS" || state.status === "WAITING_FOR_GUEST" || state.status === "FINISHED")) {
-      sendMessage({ type: "BOARD_SYNC", state: stateRef.current });
+      const syncState = { ...stateRef.current, effects: [] };
+      sendMessage({ type: "BOARD_SYNC", state: syncState });
     }
   }, [
     isHost, 
@@ -234,6 +238,19 @@ export function usePeer(roomId: string, isHost: boolean) {
       }
     }
   }, [isHost, isConnected, state.status, state.rematchReady, state.hostPeerId, state.guestPeerId, sendMessage, dispatch]);
+
+  // Broadcast scoring effects for immediate visual feedback
+  const prevEffectsRef = useRef<ScoreEffectEvent[]>([]);
+  useEffect(() => {
+    if (isHost && isConnected) {
+      const currentEffects = state.effects;
+      const newEffects = currentEffects.filter(e => !prevEffectsRef.current.some(pe => pe.id === e.id));
+      newEffects.forEach(effect => {
+        sendMessage({ type: "SCORE_GAIN_EFFECT", effect });
+      });
+      prevEffectsRef.current = currentEffects;
+    }
+  }, [isHost, isConnected, state.effects, sendMessage]);
 
   return { peerId, isConnected, sendMessage, startGame };
 }

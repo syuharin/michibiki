@@ -24,14 +24,19 @@ describe("Auto-Turn Integration", () => {
       guestPeerId: guestId,
       board: Array(6).fill(null).map((_, y) => Array(6).fill(null).map((_, x) => ({ x, y, layers: [] }))),
       scores: { [hostId]: 0, [guestId]: 0 },
-      deck: [mockTile("deck-1", hostId)],
+      decks: { [hostId]: [mockTile("deck-1", hostId)], [guestId]: [] },
       hands: {
         [hostId]: [mockTile("tile-1", hostId)],
         [guestId]: [mockTile("tile-2", guestId)],
       },
+      turnOrderConfig: "HOST_FIRST",
+      startingPlayerId: hostId,
+      rematchReady: {},
+      winnerId: null,
+      effects: []
     };
 
-    // 1. Place a tile
+    // 1. Place a tile - this should now automatically finalize the turn and refill hand
     const stateAfterPlacement = gameReducer(initialState, {
       type: "PLACE_TILE",
       tileId: "tile-1",
@@ -40,11 +45,8 @@ describe("Auto-Turn Integration", () => {
       rotation: 0,
     });
 
-    // 2. Trigger turn confirmation (this will be done automatically in the next task)
-    const stateAfterAutoTurn = gameReducer(stateAfterPlacement, { type: "PASS_TURN" });
-
-    expect(stateAfterAutoTurn.turnOwnerId).toBe(guestId);
-    expect(stateAfterAutoTurn.hands[hostId].length).toBe(1); // Should have refilled from deck
-    expect(stateAfterAutoTurn.hands[hostId][0].id).toBe("deck-1");
+    expect(stateAfterPlacement.turnOwnerId).toBe(guestId);
+    expect(stateAfterPlacement.hands[hostId].length).toBe(1); // Should have refilled from deck
+    expect(stateAfterPlacement.hands[hostId][0].id).toBe("deck-1");
   });
 });

@@ -6,6 +6,20 @@ export type TileType = "I" | "L" | "T" | "X" | "CORNER" | "STRAIGHT" | "VERTICAL
 
 export type ConnectionPoint = "U" | "D" | "L" | "R";
 
+export interface TileCoordinate {
+  x: number;
+  y: number;
+}
+
+export interface ScoreEffectEvent {
+  id: string;
+  timestamp: number;
+  totalPoints: number;
+  originCoords: TileCoordinate;
+  path: TileCoordinate[];
+  duration: number;
+}
+
 export interface Tile {
   id: string;
   type: TileType;
@@ -37,6 +51,7 @@ export interface GameState {
   startingPlayerId: string | null;
   rematchReady: Record<string, boolean>; // PeerID -> Ready Status
   winnerId: string | null; // PeerID or "DRAW"
+  effects: ScoreEffectEvent[];
 }
 
 export type GameAction =
@@ -49,7 +64,9 @@ export type GameAction =
   | { type: "PASS_TURN" }
   | { type: "SYNC_STATE"; state: GameState }
   | { type: "SET_REMATCH_READY"; peerId: string; ready: boolean }
-  | { type: "RESET_GAME" };
+  | { type: "RESET_GAME" }
+  | { type: "ADD_SCORE_EFFECT"; effect: ScoreEffectEvent }
+  | { type: "REMOVE_SCORE_EFFECT"; effectId: string };
 
 export interface RulebookContent {
   content: string;
