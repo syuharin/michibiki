@@ -3,6 +3,7 @@
 import { useDroppable } from "@dnd-kit/core";
 import { useGame } from "@/context/GameContext";
 import Tile from "./Tile";
+import { FloatingScore } from "./FloatingScore";
 import { Cell as CellType } from "@/types/game";
 import { COLUMN_LABELS, ROW_LABELS } from "@/lib/constants/coordinates";
 
@@ -51,10 +52,16 @@ export default function Board() {
 }
 
 function CellComponent({ cell }: { cell: CellType }) {
+  const { state } = useGame();
   const { setNodeRef, isOver } = useDroppable({
     id: `cell-${cell.x}-${cell.y}`,
     data: { x: cell.x, y: cell.y },
   });
+
+  // Find all effects that include this cell in their path and sum the points
+  const activeEffects = state.effects.filter(e => 
+    e.path.some(p => p.x === cell.x && p.y === cell.y)
+  );
 
   return (
     <div 
@@ -62,8 +69,26 @@ function CellComponent({ cell }: { cell: CellType }) {
       className={`bg-michibiki-white w-full h-full flex items-center justify-center relative ${isOver ? "bg-michibiki-gray text-white" : ""}`}
     >
       {cell.layers.length > 0 && (
-        <Tile tile={cell.layers[cell.layers.length - 1]} />
+        <Tile 
+          tile={cell.layers[cell.layers.length - 1]} 
+          isHighlighted={activeEffects.length > 0}
+        />
       )}
+      
+      {activeEffects.map(effect => {
+        // Count how many times this cell appears in the path to get per-tile contribution
+        const contribution = effect.path.filter(p => p.x === cell.x && p.y === cell.y).length;
+        if (contribution === 0) return null;
+        
+        return (
+          <FloatingScore 
+            key={`${effect.id}-${cell.x}-${cell.y}`}
+            id={effect.id}
+            points={contribution}
+            duration={effect.duration}
+          />
+        );
+      })}
     </div>
   );
 }

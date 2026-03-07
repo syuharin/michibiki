@@ -25,11 +25,16 @@ describe("Automatic Skip & Finish Logic", () => {
       guestPeerId: guestId,
       board: Array(6).fill(null).map((_, y) => Array(6).fill(null).map((_, x) => ({ x, y, layers: [] }))),
       scores: { [hostId]: 0, [guestId]: 0 },
-      deck: [],
+      decks: { [hostId]: [], [guestId]: [] },
       hands: {
         [hostId]: [mockTile("last-tile", hostId)],
         [guestId]: [],
       },
+      turnOrderConfig: "HOST_FIRST",
+      startingPlayerId: hostId,
+      rematchReady: {},
+      winnerId: null,
+      effects: []
     };
 
     // 1. Host places last tile

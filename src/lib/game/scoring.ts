@@ -15,44 +15,90 @@ const DELTA: Record<ConnectionPoint, { dx: number; dy: number }> = {
   R: { dx: 1, dy: 0 },
 };
 
-export function calculateConnectedGroup(board: Board, startX: number, startY: number): Set<string> {
+/**
+ * Calculates all tiles involved in scoring connections for a newly placed tile.
+ * Returns an array of coordinates where duplicates represent a tile contributing to multiple routes.
+ */
+export function calculateConnectedTiles(board: Board, startX: number, startY: number): string[] {
   const topTile = getTopTile(board, startX, startY);
-  if (!topTile) return new Set();
+  if (!topTile) return [];
 
   const ownerId = topTile.ownerId;
-  const connected = new Set<string>();
-  const queue: [number, number][] = [[startX, startY]];
-  connected.add(`${startX},${startY}`);
+  const currentExits = getRotatedConnections(topTile.type, topTile.rotation);
+  
+  const allInvolvedSet = new Set<string>();
+  allInvolvedSet.add(`${startX},${startY}`);
+  let connectedAny = false;
+
+  for (const exit of currentExits) {
+    const { dx, dy } = DELTA[exit];
+    const nx = startX + dx;
+    const ny = startY + dy;
+
+    if (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE) {
+      const neighborTile = getTopTile(board, nx, ny);
+      if (neighborTile && neighborTile.ownerId === ownerId) {
+        const neighborExits = getRotatedConnections(neighborTile.type, neighborTile.rotation);
+        if (neighborExits.includes(OPPOSITE[exit])) {
+          connectedAny = true;
+          const branchTiles = findTilesInBranch(board, nx, ny, ownerId, new Set([`${startX},${startY}`]));
+          branchTiles.forEach(t => allInvolvedSet.add(t));
+        }
+      }
+    }
+  }
+
+  if (!connectedAny) {
+    return [`${startX},${startY}`];
+  }
+
+  return Array.from(allInvolvedSet);
+}
+
+/**
+ * Helper to find all tiles in a specific branch using BFS, avoiding the origin.
+ */
+function findTilesInBranch(board: Board, x: number, y: number, ownerId: string, visited: Set<string>): string[] {
+  const branch: string[] = [];
+  const queue: [number, number][] = [[x, y]];
+  visited.add(`${x},${y}`);
+  branch.push(`${x},${y}`);
 
   let head = 0;
   while (head < queue.length) {
-    const [x, y] = queue[head++];
-    const currentTile = getTopTile(board, x, y);
-    if (!currentTile) continue;
+    const [cx, cy] = queue[head++];
+    const tile = getTopTile(board, cx, cy);
+    if (!tile) continue;
 
-    const currentExits = getRotatedConnections(currentTile.type, currentTile.rotation);
-
-    for (const exit of currentExits) {
+    const exits = getRotatedConnections(tile.type, tile.rotation);
+    for (const exit of exits) {
       const { dx, dy } = DELTA[exit];
-      const nx = x + dx;
-      const ny = y + dy;
+      const nx = cx + dx;
+      const ny = cy + dy;
 
       if (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE) {
-        if (connected.has(`${nx},${ny}`)) continue;
+        const coord = `${nx},${ny}`;
+        if (visited.has(coord)) continue;
 
-        const neighborTile = getTopTile(board, nx, ny);
-        if (neighborTile && neighborTile.ownerId === ownerId) {
-          const neighborExits = getRotatedConnections(neighborTile.type, neighborTile.rotation);
+        const neighbor = getTopTile(board, nx, ny);
+        if (neighbor && neighbor.ownerId === ownerId) {
+          const neighborExits = getRotatedConnections(neighbor.type, neighbor.rotation);
           if (neighborExits.includes(OPPOSITE[exit])) {
-            connected.add(`${nx},${ny}`);
+            visited.add(coord);
+            branch.push(coord);
             queue.push([nx, ny]);
           }
         }
       }
     }
   }
+  return branch;
+}
 
-  return connected;
+// Keep the old one for compatibility or internal use if needed, 
+// but update it to use the new logic if it was intended to match spec.
+export function calculateConnectedGroup(board: Board, x: number, y: number): Set<string> {
+  return new Set(calculateConnectedTiles(board, x, y));
 }
 
 function getTopTile(board: Board, x: number, y: number): Tile | null {

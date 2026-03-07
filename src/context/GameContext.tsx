@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useReducer, ReactNode } from "react";
 import { GameState, GameAction, Board, Tile, TileType } from "@/types/game";
 import { BOARD_SIZE } from "@/lib/constants/tiles";
-import { calculateConnectedGroup } from "@/lib/game/scoring";
+import { SCORE_EFFECT_DURATION } from "@/lib/constants/game";
+import { calculateConnectedTiles } from "@/lib/game/scoring";
 import { isLegalPlacement } from "@/lib/game/validation";
 
 const createEmptyBoard = (): Board => {
@@ -30,6 +31,7 @@ const initialState: GameState = {
   startingPlayerId: null,
   rematchReady: {},
   winnerId: null,
+  effects: [],
 };
 
 // Helper to handle turn transition, hand refilling, and game end detection
@@ -127,7 +129,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       };
     }
     case "SYNC_STATE":
-      return { ...action.state };
+      return { ...action.state, effects: state.effects };
     case "PLACE_TILE": {
       const { tileId, x, y, rotation } = action;
       const playerHand = state.hands[state.turnOwnerId] || [];
@@ -149,16 +151,34 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       
       newBoard[y][x] = { ...cell, layers: [...cell.layers, updatedTile] };
 
-      const connectedGroup = calculateConnectedGroup(newBoard, x, y);
+      const involvedTiles = calculateConnectedTiles(newBoard, x, y);
+      const totalPoints = involvedTiles.length;
+      
       const newScores = { 
         ...state.scores,
-        [state.turnOwnerId]: (state.scores[state.turnOwnerId] || 0) + connectedGroup.size
+        [state.turnOwnerId]: (state.scores[state.turnOwnerId] || 0) + totalPoints
       };
 
       const nextHands = { ...state.hands };
       nextHands[state.turnOwnerId] = playerHand.filter((t) => t.id !== tileId);
 
-      return finalizeTurn(state, newBoard, nextHands, state.decks, newScores);
+      const newEffect = {
+        id: `score-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        timestamp: Date.now(),
+        totalPoints,
+        originCoords: { x, y },
+        path: involvedTiles.map(coord => {
+          const [tx, ty] = coord.split(",").map(Number);
+          return { x: tx, y: ty };
+        }),
+        duration: SCORE_EFFECT_DURATION
+      };
+
+      const finalState = finalizeTurn(state, newBoard, nextHands, state.decks, newScores);
+      return {
+        ...finalState,
+        effects: [...(state.effects || []), newEffect]
+      };
     }
     case "ROTATE_HAND_TILE": {
       const { tileId } = action;
@@ -208,6 +228,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         scores: { [state.hostPeerId]: 0, [state.guestPeerId || ""]: 0 },
       };
     }
+    case "ADD_SCORE_EFFECT":
+      return { ...state, effects: [...(state.effects || []), action.effect] };
+    case "REMOVE_SCORE_EFFECT":
+      return { ...state, effects: (state.effects || []).filter(e => e.id !== action.effectId) };
     default:
       return state;
   }
