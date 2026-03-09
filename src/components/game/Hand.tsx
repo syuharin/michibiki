@@ -1,6 +1,8 @@
 "use client";
 
 import { useGame } from "@/context/GameContext";
+import { useUI } from "@/context/UIContext";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import Tile from "./Tile";
 
 // Layout constants for vertical hand
@@ -22,9 +24,23 @@ export default function Hand({
   layout?: "bottom" | "right";
 }) {
   const { state } = useGame();
+  const { selectedTileId, setSelectedTileId } = useUI();
+  const isMobile = useMediaQuery("(max-width: 640px)");
   const myHand = state.hands[peerId] || [];
 
   const isVertical = layout === "right";
+
+  const handleTileClick = (tileId: string) => {
+    if (!isMyTurn) return;
+
+    if (isMobile) {
+      // On mobile, toggle selection
+      setSelectedTileId(selectedTileId === tileId ? null : tileId);
+    } else {
+      // On desktop, retain direct rotation
+      onRotate(tileId);
+    }
+  };
 
   return (
     <div className={`
@@ -71,7 +87,8 @@ export default function Hand({
                 <Tile 
                   tile={tile} 
                   isDraggable={isMyTurn}
-                  onClick={() => isMyTurn && onRotate(tile.id)}
+                  isSelected={selectedTileId === tile.id}
+                  onClick={() => handleTileClick(tile.id)}
                   className={`
                     transition-all shadow-md z-0 hover:z-10
                     ${isVertical 

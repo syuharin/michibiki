@@ -12,9 +12,10 @@ interface TileProps {
   className?: string;
   style?: React.CSSProperties;
   isHighlighted?: boolean;
+  isSelected?: boolean;
 }
 
-export default function Tile({ tile, isDraggable, onClick, className = "", style, isHighlighted }: TileProps) {
+export default function Tile({ tile, isDraggable, onClick, className = "", style, isHighlighted, isSelected }: TileProps) {
   const { state } = useGame();
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: tile.id,
@@ -24,7 +25,7 @@ export default function Tile({ tile, isDraggable, onClick, className = "", style
 
   const draggableStyle = {
     transform: transform ? CSS.Translate.toString(transform) : undefined,
-    zIndex: isDragging ? 100 : undefined,
+    zIndex: isDragging ? 100 : (isSelected ? 10 : undefined),
     touchAction: isDraggable ? "none" : "auto" as const,
     ...style,
   };
@@ -44,6 +45,13 @@ export default function Tile({ tile, isDraggable, onClick, className = "", style
         : { bg: "bg-rose-50", border: "border-rose-300", accent: "bg-rose-600", pulse: "border-sky-500" })
     : { bg: "bg-white", border: "border-michibiki-gray-light", accent: "bg-michibiki-black", pulse: "" };
 
+  const getSelectionStyles = () => {
+    if (isSelected) {
+      return "ring-4 ring-michibiki-black ring-offset-2 scale-110 shadow-xl z-10 border-michibiki-black";
+    }
+    return "";
+  };
+
   return (
     <div 
       ref={setNodeRef}
@@ -51,7 +59,7 @@ export default function Tile({ tile, isDraggable, onClick, className = "", style
       {...listeners}
       {...attributes}
       onClick={onClick}
-      className={`relative w-full h-full ${colors.bg} ${colors.border} border flex items-center justify-center cursor-pointer transition-[border,background] ${className} ${isDraggable ? "hover:border-michibiki-black" : ""} ${tile.isReversal && tile.turnsLeft === 1 && !isDragging ? `reversal-pulse ${colors.pulse} border-2` : ""} ${isHighlighted ? "tile-glow" : ""} ${isDragging ? "opacity-0" : "shadow-md"}`}
+      className={`relative w-full h-full ${colors.bg} ${colors.border} border flex items-center justify-center cursor-pointer transition-all duration-200 ${className} ${isDraggable ? "hover:border-michibiki-black" : ""} ${tile.isReversal && tile.turnsLeft === 1 && !isDragging ? `reversal-pulse ${colors.pulse} border-2` : ""} ${isHighlighted ? "tile-glow" : ""} ${getSelectionStyles()} ${isDragging ? "opacity-0" : "shadow-md"}`}
     >
       <div style={contentStyle} className="w-full h-full flex items-center justify-center">
         <svg viewBox="0 0 100 100" className="w-full h-full">

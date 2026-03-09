@@ -5,12 +5,15 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 interface UIContextType {
   isRulebookOpen: boolean;
   setRulebookOpen: (open: boolean) => void;
+  selectedTileId: string | null;
+  setSelectedTileId: (id: string | null) => void;
 }
 
 const UIContext = createContext<UIContextType | null>(null);
 
 export function UIProvider({ children }: { children: ReactNode }) {
   const [isRulebookOpen, setIsRulebookOpen] = useState(false);
+  const [selectedTileId, setSelectedTileId] = useState<string | null>(null);
 
   const setRulebookOpen = (open: boolean) => {
     // When opening rulebook, we could potentially close others if we had their state here
@@ -18,7 +21,12 @@ export function UIProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <UIContext.Provider value={{ isRulebookOpen, setRulebookOpen }}>
+    <UIContext.Provider value={{ 
+      isRulebookOpen, 
+      setRulebookOpen,
+      selectedTileId,
+      setSelectedTileId
+    }}>
       {children}
     </UIContext.Provider>
   );

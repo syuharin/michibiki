@@ -11,25 +11,36 @@ import Board from "./Board";
 import Hand from "./Hand";
 import Tile from "./Tile";
 import Deck from "./Deck";
+import ActionBar from "./ActionBar";
 import TurnOrderSelector from "./TurnOrderSelector";
 import ResultModal from "./ResultModal";
 import RulebookButton from "@/components/rulebook/RulebookButton";
 import { useUI } from "@/context/UIContext";
 import { hasLegalMove } from "@/lib/game/validation";
 import { Tile as TileType } from "@/types/game";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 export default function GameContainer({ roomId, isHost }: { roomId: string; isHost: boolean }) {
   const { state } = useGame();
   const { isConnected, sendMessage, peerId, startGame } = usePeer(roomId, isHost);
   const { placeTile, rotateTile, passTurn, setTurnOrder, handleRematch, handleReturnToLobby } = useGameLogic(isHost, sendMessage);
-  const { setRulebookOpen } = useUI();
+  const { setRulebookOpen, selectedTileId, setSelectedTileId } = useUI();
+  const isMobile = useMediaQuery("(max-width: 640px)");
 
   const myPeerId = isHost ? state.hostPeerId : state.guestPeerId;
+  const isMyTurn = state.turnOwnerId === myPeerId;
 
   const [layout, setLayout] = useState<"bottom" | "right">("bottom");
   const [isMounted, setIsMounted] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [startMessage, setStartMessage] = useState<string | null>(null);
+
+  // Clear selection when turn ends
+  useEffect(() => {
+    if (!isMyTurn) {
+      setSelectedTileId(null);
+    }
+  }, [isMyTurn, setSelectedTileId]);
 
   useEffect(() => {
     if (state.status === "IN_PROGRESS" && state.startingPlayerId) {
@@ -69,7 +80,6 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
   const sensorsWrapper = useSensors(...sensors);
 
   const opponentPeerId = isHost ? state.guestPeerId : state.hostPeerId;
-  const isMyTurn = state.turnOwnerId === myPeerId;
   
   const myHand = useMemo(() => state.hands[myPeerId || ""] || [], [state.hands, myPeerId]);
   
@@ -87,6 +97,10 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
   const handleDragStart = (event: DragStartEvent) => {
     if (activeId) return;
     setActiveId(event.active.id as string);
+    // When starting drag on mobile, ensure the dragged tile is selected
+    if (isMobile) {
+      setSelectedTileId(event.active.id as string);
+    }
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -100,9 +114,22 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
       
       if (tileData && cellData) {
         const success = placeTile(tileId, cellData.x, cellData.y, tileData.rotation);
-        if (!success) {
+        if (success) {
+          // Clear selection on successful placement
+          setSelectedTileId(null);
+        } else {
           console.warn("Illegal move attempted");
         }
+      }
+    }
+  };
+
+  const handleContainerClick = (e: React.MouseEvent) => {
+    // If clicking outside hand/board/actionbar, clear selection
+    if (isMobile && selectedTileId) {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".hand-area") && !target.closest(".action-bar-area")) {
+        setSelectedTileId(null);
       }
     }
   };
@@ -165,7 +192,10 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
       onDragEnd={handleDragEnd}
       onDragCancel={() => setActiveId(null)}
     >
-      <div className="flex h-screen max-h-screen flex-col items-center p-2 sm:p-4 gap-2 sm:gap-6 bg-michibiki-white overflow-hidden">
+      <div 
+        onClick={handleContainerClick}
+        className="flex h-screen max-h-screen flex-col items-center p-2 sm:p-4 gap-2 sm:gap-6 bg-michibiki-white overflow-hidden"
+      >
         {startMessage && (
           <div className="fixed inset-0 z-[110] flex items-center justify-center pointer-events-none">
             <div className="bg-michibiki-black text-white px-12 py-6 rounded-none border-4 border-white shadow-2xl animate-in zoom-in duration-300">
@@ -236,13 +266,16 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
                   パス
                 </button>
               )}
-              <p className="text-[8px] sm:text-[10px] text-michibiki-gray-dark font-bold uppercase">
-                {isMyTurn ? (isPassAvailable ? "置ける場所がありません" : "手札をタップで回転") : "相手を待っています"}
+              <p className="text-[8px] sm:text-[10px] text-michibiki-gray-dark font-bold uppercase">      
+                {isMyTurn
+                  ? (isPassAvailable ? "置ける場所がありません" : (isMobile ? (selectedTileId ? "回転ボタンで回転" : "手札をタップで選択") : "手札をタップで回転"))
+                  : "相手を待っています"}
               </p>
+
             </div>
           </main>
 
-          <aside className={`${layout === "right" ? "w-64" : "w-full"} shrink-0 transition-all duration-300`}>
+          <aside className={`${layout === "right" ? "w-64" : "w-full"} shrink-0 transition-all duration-300 hand-area`}>
             <Hand 
               peerId={myPeerId || ""} 
               isMyTurn={isMyTurn} 
@@ -252,6 +285,15 @@ export default function GameContainer({ roomId, isHost }: { roomId: string; isHo
           </aside>
         </div>
       </div>
+
+      {isMobile && selectedTileId && isMyTurn && (
+        <div className="action-bar-area">
+          <ActionBar 
+            onRotate={() => rotateTile(selectedTileId)} 
+            isVisible={true} 
+          />
+        </div>
+      )}
 
       <DragOverlay dropAnimation={null}>
         {activeId && activeTile ? (
