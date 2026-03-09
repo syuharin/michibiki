@@ -41,10 +41,9 @@ npm test; npm run lint
 TypeScript / Next.js 14+ (App Router): Follow standard conventions
 
 ## Recent Changes
+- 012-mobile-rotate-button: Added [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION] + [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
 - 011-score-gain-feedback: Implemented visual score feedback with floating indicators and tile glow effects synchronized via PeerJS.
 - 010-accessibility-score-ui: Added TypeScript (Next.js 14+ App Router) + React, Tailwind CSS, PeerJS, @dnd-kit
-- 009-rulebook-display: Added TypeScript / Next.js (App Router) + Tailwind CSS, PeerJS, @dnd-kit, lucide-react, react-markdown (New)
-- 008-mobile-ui-fixes: Added mobile responsiveness fixes and layout adjustments.
 
 
 <!-- MANUAL ADDITIONS START -->
